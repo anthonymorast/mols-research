@@ -1,0 +1,47 @@
+function permu_iso_2 (B)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%permutes the symbols of a latin square from an isotopy group
+% to generate all normalized ltin squares.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%open file containing permutation of order 4
+fid = fopen ( '5_perm.txt' );
+
+%read in number of permutations
+n = fscanf(fid, '%u',1);
+
+%open file for writing
+fid2 = fopen('missingmckaypermutations.dat', 'a');
+
+m=n;
+i = 0;
+while ( i < factorial(n) )
+    A = B;
+    %read in permutation
+    sigma = fscanf ( fid, '%u', n);
+    for j=1:m
+        for k=1:n
+            x = A(j,k);
+            if x == 1
+                A(j,k) = sigma(1);
+            elseif x == 2
+                A(j,k) = sigma(2);
+            elseif x == 3
+                A(j,k) = sigma(3);
+            elseif x == 4
+                A(j,k) = sigma(4);
+            else 
+                A(j,k) = sigma(5);
+            end
+        end
+    end
+    C = normalize_ls_5(A);
+    %print out latin square
+    fprintf(fid2, '%u %u %u %u %u ', C);
+    fprintf(fid2, '\n');
+    i = i+1;
+end
+
+fclose(fid);
+fclose(fid2);
