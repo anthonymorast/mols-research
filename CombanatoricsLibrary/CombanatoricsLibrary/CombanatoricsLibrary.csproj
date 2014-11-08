@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Combinatorics.cs" />
     <Compile Include="LatinSquares.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

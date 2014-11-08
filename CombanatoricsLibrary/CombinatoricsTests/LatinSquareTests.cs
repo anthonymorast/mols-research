@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace CombinatoricsTests
 {
     [TestClass]
-    public class UnitTest1
+    public class LatinSquareTests
     {
         [TestMethod]
         public void CreateSquaresTest()
@@ -32,6 +32,24 @@ namespace CombinatoricsTests
 
         [TestMethod]
         public void CheckValuesTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void IsMutuallyOrthogonalTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void IsSameIsotopyTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void IsSameMainClassTest()
         {
 
         }

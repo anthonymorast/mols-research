@@ -171,5 +171,48 @@ namespace CombanatoricsLibrary
         {
             return ls.GetOrder();
         }
+
+        /// <summary>
+        /// Determins if this square is mutually orhogonal with a given square.
+        /// </summary>
+        /// <param name="ls"></param>
+        /// <param name="checkSquare"></param>
+        public static bool IsMutuallyOrthogonal(this LatinSquare ls, LatinSquare checkSquare)
+        {
+            // squares not the same size
+            if ( ls.GetOrder() != checkSquare.GetOrder() )
+                return false;
+            
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the square belongs to the same isotopy class as the given square.
+        /// </summary>
+        /// <param name="ls"></param>
+        /// <param name="checkSquare"></param>
+        /// <returns></returns>
+        public static bool IsSameIsotopyClass(this LatinSquare ls, LatinSquare checkSquare)
+        {
+            if (ls.GetOrder() != checkSquare.GetOrder())
+                return false;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the square belongs to the same main class as the given square.
+        /// </summary>
+        /// <param name="ls"></param>
+        /// <param name="checkSquare"></param>
+        /// <returns></returns>
+        public static bool IsSameMainClass(this LatinSquare ls, LatinSquare checkSquare)
+        {
+            if (ls.GetOrder() != checkSquare.GetOrder())
+                return false;
+
+            return false;
+        }
     }
 }
