@@ -46,7 +46,7 @@ namespace CombanatoricsLibrary
         /// Returns the order of the Latin square.
         /// </summary>
         /// <returns></returns>
-        public int GetOrder()
+        internal int GetOrder()
         {
             return this.squareOrder;
         }
@@ -56,9 +56,10 @@ namespace CombanatoricsLibrary
         /// </summary>
         /// <param name="valueList"></param>
         /// <returns></returns>
-        public void SetValues(List<int> valueList)
+        internal void SetValues(List<int> valueList)
         {
             string errorMessage = "";
+
             if (valueList.Count != (squareOrder * squareOrder))
             {
                 throw new Exception("Incorrect number of values to fill Latin Square");
@@ -77,7 +78,7 @@ namespace CombanatoricsLibrary
         /// </summary>
         /// <param name="valueList"></param>
         /// <returns></returns>
-        private bool CheckValues(List<int> valueList, out string error)
+        internal bool CheckValues(List<int> valueList, out string error)
         {
             // create rows and column lists
             List<int[]> rows = new List<int[]>();
@@ -195,6 +196,7 @@ namespace CombanatoricsLibrary
         /// <returns></returns>
         public static bool IsSameIsotopyClass(this LatinSquare ls, LatinSquare checkSquare)
         {
+            // squares not the same size, can't be some isotopy class
             if (ls.GetOrder() != checkSquare.GetOrder())
                 return false;
 
@@ -209,9 +211,12 @@ namespace CombanatoricsLibrary
         /// <returns></returns>
         public static bool IsSameMainClass(this LatinSquare ls, LatinSquare checkSquare)
         {
+            // squares not the same size, can't be some isotopy class 
             if (ls.GetOrder() != checkSquare.GetOrder())
                 return false;
 
+
+            
             return false;
         }
     }

@@ -14,7 +14,7 @@ namespace Testing
             LatinSquare square = new LatinSquare(4);
             LatinSquare square2 = new LatinSquare(4);
            
-            square.SetValues(new List<int> { 5, 6, 7, 8, 2, 1, 11, 4, 3, 10, 1, 19, 1, 2, 3, 20 });
+            square.Fill(new List<int> { 5, 6, 7, 8, 2, 1, 11, 4, 3, 10, 1, 19, 1, 2, 3, 20 });
             Console.WriteLine(square2.ToString() + square.ToString());
             bool mo = square.IsMutuallyOrthogonal(square2);
 
