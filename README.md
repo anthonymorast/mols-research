@@ -1,6 +1,4 @@
-CombinatoricsLibrary
+Combinatorics Library
 ====================
 
-A C# combinatorics libraries with a focus on Latin Squares.
-
-The Latin Square class will inherit from the Array Class and have the stipulation of being nxn.
+A combinatorics library written as a C# dynamically linked library (dll) with a focus on Latin squares. 
