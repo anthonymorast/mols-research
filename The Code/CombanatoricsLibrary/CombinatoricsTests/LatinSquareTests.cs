@@ -67,7 +67,42 @@ namespace CombinatoricsTests
         }
 
         [TestMethod]
-        public void CheckValuesTest()
+        public void GetElementAtPositionTest()
+        {
+            int correctElementCount = 0;
+            LatinSquare square1 = new LatinSquare(4);
+            square1.Fill(new List<int> { 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 2, 1, 4, 3, 1, 2 });
+
+            if (square1.GetElementAtPosition(1, 1) == 1)    // correct - count = 1
+                correctElementCount++;
+            if (square1.GetElementAtPosition(1, 2) == 2)    // correct - count = 2
+                correctElementCount++;
+            if (square1.GetElementAtPosition(1, 3) == 3)    // correct - count = 3
+                correctElementCount++;
+            if (square1.GetElementAtPosition(1, 4) == 4)    // correct - count = 4
+                correctElementCount++;
+            if (square1.GetElementAtPosition(4, 4) == 2)    // correct - count = 5
+                correctElementCount++;
+            if (square1.GetElementAtPosition(3, 3) == 2)    // correct - count = 6
+                correctElementCount++;
+            if (square1.GetElementAtPosition(2, 4) == 4)    // incorrect - count = 6
+                correctElementCount++;
+            if (square1.GetElementAtPosition(2, 1) == 2)    // correct - count = 7
+                correctElementCount++;
+            if (square1.GetElementAtPosition(3, 4) == 1)    // correct - count = 8
+                correctElementCount++;
+            if (square1.GetElementAtPosition(4, 3) == 2)    // incorrect - count = 8
+                correctElementCount++;
+            if (square1.GetElementAtPosition(3, 1) == 3)    // correct - count = 9
+                correctElementCount++;
+
+            Assert.AreEqual(correctElementCount, 9);
+        }
+
+
+
+        [TestMethod]
+        public void CheckGoodValuesTest()
         {
 
         }

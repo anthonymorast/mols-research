@@ -3,3 +3,8 @@ C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\CombanatoricsLibrary\Comb
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\CombanatoricsLibrary\CombanatoricsLibrary\bin\Debug\CombanatoricsLibrary.pdb
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.dll
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.pdb
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\bin\Debug\CombanatoricsLibrary.dll
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\bin\Debug\CombanatoricsLibrary.pdb
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.csprojResolveAssemblyReference.cache
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.dll
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.pdb

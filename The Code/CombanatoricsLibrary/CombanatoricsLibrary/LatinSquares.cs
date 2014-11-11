@@ -128,6 +128,12 @@ namespace CombanatoricsLibrary
             return true;
         }
 
+        /// <summary>
+        /// <para> Override the ToString() method to either print the Latin square to
+        /// the screen or to display that the Latin square is empty
+        /// </para>
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string ret_string = "";
@@ -146,6 +152,23 @@ namespace CombanatoricsLibrary
             }
 
             return ret_string;
+        }
+
+        /// <summary>
+        /// Returns a specific element in the square by calculating the offset within
+        /// the values list.
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <returns></returns>
+        internal int GetElement(int row, int col)
+        {
+            if (row > squareOrder || col > squareOrder)
+                throw new ApplicationException(string.Format("Index {0},{1} not in square of size {2}x{2}.", row, col, squareOrder));
+            
+            row--;
+            col--;
+            return values[(row * squareOrder) + col];
         }
     }
 
@@ -218,6 +241,11 @@ namespace CombanatoricsLibrary
 
             
             return false;
+        }
+
+        public static int GetElementAtPosition(this LatinSquare ls, int row, int column)
+        {
+            return ls.GetElement(row, column);
         }
     }
 }

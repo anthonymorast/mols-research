@@ -13,11 +13,13 @@ namespace Testing
         {
             LatinSquare square = new LatinSquare(4);
             LatinSquare square2 = new LatinSquare(4);
-           
-            square.Fill(new List<int> { 5, 6, 7, 8, 2, 1, 11, 4, 3, 10, 1, 19, 1, 2, 3, 20 });
-            Console.WriteLine(square2.ToString() + square.ToString());
-            bool mo = square.IsMutuallyOrthogonal(square2);
 
+            LatinSquare square1 = new LatinSquare(3);
+            square1.Fill(new List<int> { 1, 2, 3, 2, 3, 1, 3, 1, 2 });
+
+            square1.GetElementAtPosition(3, 3);
+            square1.GetElementAtPosition(4, 4);
+            
             if (square2.IsSameIsotopyClass(square) || square.IsSameMainClass(square2))
                 Console.WriteLine("These square belong to the same isotopy class or the same main class.");
         }       
