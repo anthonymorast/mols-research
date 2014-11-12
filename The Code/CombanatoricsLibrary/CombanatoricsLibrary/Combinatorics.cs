@@ -44,17 +44,32 @@ namespace CombanatoricsLibrary
         }
 
         /// <summary>
-        /// Returns the number of permutations of a given set of numbers, n choose k.
+        /// Returns the number of permutations of a given set of numbers, n Pick k.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public static long Permutations (long n, long k)
+        public static long Permutations(long n, long k)
         {
-            return 0;
+            if (k > n)
+                throw new ApplicationException(string.Format(
+                        "Cannot find number of permutations for {0} pick {1}, k > n.", n, k));
+
+            if (k == 0)
+                return 1;
+            else if (k == 1)
+                return n;
+
+            long result = 1;
+            long stop = (n - k);
+
+            for (long i = n; i > stop; i--)
+                result *= i;
+
+            return result;
         }
 
         /// <summary>
-        /// Returns the total number of combinations of a given set of number, n choose k.
+        /// Returns the total number of combinations of a given set of number, n Choose k.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
@@ -62,7 +77,11 @@ namespace CombanatoricsLibrary
         {
             if (k > n)
                 throw new ApplicationException(string.Format(
-                          "Cannot find combinations for {0} choose {1}, k > n.", n, k));
+                          "Cannot find number of combinations for {0} choose {1}, k > n.", n, k));
+            if (k == 0)
+                return 1;
+            else if (k == 1)
+                return n;
 
             long result = 1;  
 
