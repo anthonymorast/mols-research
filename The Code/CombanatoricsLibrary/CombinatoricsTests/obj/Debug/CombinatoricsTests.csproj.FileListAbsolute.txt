@@ -10,5 +10,4 @@ C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLib
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombinatoricsTests\bin\Debug\CombinatoricsTests.dll
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombinatoricsTests\bin\Debug\CombinatoricsTests.pdb
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombinatoricsTests\bin\Debug\CombanatoricsLibrary.dll
-C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombinatoricsTests\bin\Debug\CombanatoricsLibrary.pdb
 C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombinatoricsTests\obj\Debug\CombinatoricsTests.pdb

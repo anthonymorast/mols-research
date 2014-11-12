@@ -38,6 +38,11 @@ namespace CombanatoricsLibrary
             return new List<long[]>();
         }
 
+        public static List<long[]> ProduceCombinations (long order)
+        {
+            return new List<long[]>();
+        }
+
         /// <summary>
         /// Returns the number of permutations of a given set of numbers, n choose k.
         /// </summary>
@@ -65,7 +70,7 @@ namespace CombanatoricsLibrary
             {
                 result *= n--;
                 result /= d;
-            } 
+            }
 
             return result;
         }
