@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace CombanatoricsLibrary
 {
@@ -19,7 +20,7 @@ namespace CombanatoricsLibrary
         /// entry two = 1,2,4,3; etc.
         /// </summary>
         /// <param name="order">The of which to find permutations</param>
-        public List<long[]> ProducePermutations(long order)
+        public static List<long[]> ProducePermutations(long order)
         {
             return new List<long[]>();
         }
@@ -32,29 +33,41 @@ namespace CombanatoricsLibrary
         /// <param name="order"> The of which to find permutations</param>
         /// <param name="filename"> THe file path with filename to output permutations.</param>
         /// <returns></returns>
-        public List<long[]> ProducePermutations (long order, string filename)
+        public static List<long[]> ProducePermutations (long order, string filename)
         {
             return new List<long[]>();
         }
 
         /// <summary>
-        /// Returns the number of permutations of a given number, calculated the typical way.
+        /// Returns the number of permutations of a given set of numbers, n choose k.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public long Permutations (long order)
+        public static long Permutations (long n, long k)
         {
             return 0;
         }
 
         /// <summary>
-        /// Returns the total number of combinations of a given number.
+        /// Returns the total number of combinations of a given set of number, n choose k.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public long Combinations (long order)
+        public static long Combinations(long n, long k)
         {
-            return 0;
+            if (k > n)
+                throw new ApplicationException(string.Format(
+                          "Cannot find combinations for {0} choose {1}, k > n.", n, k));
+
+            long result = 1;  
+
+            for (long d = 1; d <= k; d++)
+            {
+                result *= n--;
+                result /= d;
+            } 
+
+            return result;
         }
     }
 }
