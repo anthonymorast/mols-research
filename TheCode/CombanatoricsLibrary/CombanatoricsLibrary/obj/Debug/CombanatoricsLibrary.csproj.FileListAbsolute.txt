@@ -1,0 +1,8 @@
+C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.csprojResolveAssemblyReference.cache
+C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\The Code\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.dll
+C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\CombanatoricsLibrary.dll
+C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\CombanatoricsLibrary.pdb
+C:\Users\1976379\Documents\GitHub\CombinatoricsLibrary\TheDLL(s)andHowTos\CombanatoricsLibrary.dll
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\TheDLL(s)andHowTos\CombanatoricsLibrary.dll
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\TheCode\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.csprojResolveAssemblyReference.cache
+C:\Users\Anthony Morast\Documents\GitHub\CombinatoricsLibrary\TheCode\CombanatoricsLibrary\CombanatoricsLibrary\obj\Debug\CombanatoricsLibrary.dll

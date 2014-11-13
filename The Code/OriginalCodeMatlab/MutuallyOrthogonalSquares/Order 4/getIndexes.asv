@@ -1,3 +1,0 @@
-function indexes = getIndexes(pairs)
-
-%returns a list of the new 
