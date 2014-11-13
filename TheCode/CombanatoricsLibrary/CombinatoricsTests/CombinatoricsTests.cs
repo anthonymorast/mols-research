@@ -36,7 +36,14 @@ namespace CombinatoricsTests
         [TestMethod]
         public void PermutationsTests()
         {
+            int correctCount = 0;
 
+            if (Combinatorics.Permutations(100, 3) == 970200)     // correct
+                correctCount++;
+            if (Combinatorics.Permutations(100, 5) == 9034502400) // correct
+                correctCount++;
+
+            Assert.AreEqual(correctCount, 2);
         }
 
         [TestMethod]

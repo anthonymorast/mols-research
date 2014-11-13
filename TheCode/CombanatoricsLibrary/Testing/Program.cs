@@ -22,6 +22,8 @@ namespace Testing
             
             if (square2.IsSameIsotopyClass(square) || square.IsSameMainClass(square2))
                 Console.WriteLine("These square belong to the same isotopy class or the same main class.");
+
+            Combinatorics.Combinations(1,1);
         }       
     }
 }

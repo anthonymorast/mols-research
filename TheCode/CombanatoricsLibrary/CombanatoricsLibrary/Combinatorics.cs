@@ -12,7 +12,7 @@ namespace CombanatoricsLibrary
     /// similar to combinations and permutations, producing all combinations of a certain number,
     /// etc. 
     /// </summary>
-    class Combinatorics
+    public class Combinatorics
     {
         /// <summary>
         /// This method takes in an integer and produces all the possible permutations of the integer.
@@ -51,6 +51,9 @@ namespace CombanatoricsLibrary
 
         /// <summary>
         /// Returns the number of permutations of a given set of numbers, n Pick k.
+        /// For values larger than approximately P(50, 40) use the BigInteger in the 
+        /// Systems.Numerics and the BigInterger implementation of this algorithm in this
+        /// library, otherwise an overflow will occur.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
@@ -70,12 +73,43 @@ namespace CombanatoricsLibrary
 
             for (long i = n; i > stop; i--)
                 result *= i;
+            Console.WriteLine("n = {0} k = {1} i = {2}", n, k, result);
 
             return result;
         }
 
+
+        
         /// <summary>
-        /// Returns the total number of combinations of a given set of number, n Choose k.
+        /// The BigInteger implementation to find all permutations of a given set of numbers, n pick k.
+        /// This implementation should be used if very large values, values larger than 1.9e+19, are
+        /// expected, as this will overflow a 64 bit integer.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        //public static BigInteger Permutations(int n, int k)
+        //{
+        //    throw new NotImplementedException("This method will be added in a future release.");
+        //    if (k > n)
+        //        throw new ApplicationException(string.Format(
+        //                "Cannot find number of permutations for {0} pick {1}, k > n.", n, k));
+
+        //    if (k == 0)
+        //        return 1;
+        //    else if (k == 1)
+        //        return n;
+
+        //    BigInteger result = 0;
+
+        //    return result;
+        //}
+
+        /// <summary>
+        /// Returns the total number of combinations of a given set of numbers, n Choose k.
+        /// For values larger than approximately 50 C 40 use the BigInteger in the 
+        /// Systems.Numerics and the BigInterger implementation of this algorithm in this
+        /// library, otherwise an overflow will occur.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
@@ -99,5 +133,30 @@ namespace CombanatoricsLibrary
 
             return result;
         }
+
+        /// <summary>
+        /// The BigInteger implementation to find all combinations of a given set of numbers, n choose k.
+        /// This implementation should be used if very large values, values larger than 1.9e+19, are
+        /// expected, as this will overflow a 64 bit integer.
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        //public static BigInteger Combinations(int n, int k)
+        //{
+        //    throw new NotImplementedException("This method will be added in a future release.");
+        //    if (k > n)
+        //        throw new ApplicationException(string.Format(
+        //                "Cannot find number of combinations for {0} pick {1}, k > n.", n, k));
+
+        //    if (k == 0)
+        //        return 1;
+        //    else if (k == 1)
+        //        return n;
+
+        //    BigInteger result = 0;
+
+        //    return result;
+        //}
     }
 }
