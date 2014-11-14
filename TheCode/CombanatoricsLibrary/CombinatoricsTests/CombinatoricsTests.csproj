@@ -55,9 +55,9 @@
     <Compile Include="CombinatoricsTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CombanatoricsLibrary\CombanatoricsLibrary.csproj">
+    <ProjectReference Include="..\CombanatoricsLibrary\Combanatorics.csproj">
       <Project>{46a01146-c3a8-4564-b590-b826226e1abd}</Project>
-      <Name>CombanatoricsLibrary</Name>
+      <Name>Combanatorics</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
