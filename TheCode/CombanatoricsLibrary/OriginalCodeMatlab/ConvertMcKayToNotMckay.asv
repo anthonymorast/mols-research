@@ -1,0 +1,12 @@
+fid = fopen('mckay_nls5.dat');
+
+while (~feof(fid))
+   A = fscanf(fid, '%u', [5 5]);
+   
+   for i=1:5
+       for j=1:5
+           
+       end
+   end
+ 
+end
