@@ -22,4 +22,4 @@ C:\Users\1976379\Documents\GitHub\MathLibrary\TheCode\Combanatorics\Combinatoric
 C:\Users\1976379\Documents\GitHub\MathLibrary\TheCode\Combanatorics\CombinatoricsTests\obj\Debug\CombinatoricsTests.pdb
 C:\Users\1976379\Documents\GitHub\MathLibrary\TheCode\Combanatorics\CombinatoricsTests\bin\Debug\CombinatoricsTests.dll
 C:\Users\1976379\Documents\GitHub\MathLibrary\TheCode\Combanatorics\CombinatoricsTests\bin\Debug\CombinatoricsTests.pdb
-C:\Users\1976379\Documents\GitHub\MathLibrary\TheCode\Combanatorics\CombinatoricsTests\bin\Debug\CombanatoricsLibrary.dll
+C:\Users\1976379\Documents\GitHub\MathLibrary\TheCode\Combanatorics\CombinatoricsTests\bin\Debug\Combanatorics.dll
