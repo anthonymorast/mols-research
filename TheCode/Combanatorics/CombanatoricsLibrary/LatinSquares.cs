@@ -201,15 +201,29 @@ namespace Combanatorics
         /// </summary>
         /// <param name="ls"></param>
         /// <param name="checkSquare"></param>
-        public static bool IsMutuallyOrthogonal(this LatinSquare ls, LatinSquare checkSquare)
+        public static bool IsOrthogonal(this LatinSquare ls, LatinSquare checkSquare)
         {
             // squares not the same size
             if (ls.GetOrder() != checkSquare.GetOrder())
                 return false;
-            else if (ls.GetOrder() == 6 || ls.GetOrder() == 2)  // per Applied Combinatorics by Roberts and Tesman (second edition)
-                return false;                           
 
-            return false;
+            int rows = ls.GetOrder();
+            int cols = rows;
+            List<Tuple<int, int>> pairs = new List<Tuple<int, int>>();
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    var currentPair = new Tuple<int, int>(ls.GetElement(i+1, j+1), checkSquare.GetElement(i+1, j+1));
+                    if (pairs.Contains(currentPair))
+                        return false;
+
+                    pairs.Add(currentPair);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -237,12 +251,10 @@ namespace Combanatorics
         /// <returns></returns>
         public static bool IsSameMainClass(this LatinSquare ls, LatinSquare checkSquare)
         {
-            throw new NotImplementedException("Implementation saved for future release.");
-
             // squares not the same size, can't be some isotopy class 
             if (ls.GetOrder() != checkSquare.GetOrder())
                 return false;
-            
+
             return false;
         }
 
