@@ -99,6 +99,33 @@ namespace CombinatoricsTests
             Assert.AreEqual(correctElementCount, 9);
         }
 
+        [TestMethod]
+        public void PermuteRowsTest()
+        {
+            LatinSquare square1 = new LatinSquare(3);
+            square1.SetValues(new List<int> { 1, 2, 3, 2, 3, 1, 3, 1, 2 });
+
+            Console.WriteLine(square1.ToString());
+            Console.WriteLine();
+            square1.PermuteRows(new List<int> { 1, 3, 2 });
+            Console.WriteLine(square1.ToString());
+            Console.WriteLine();
+            square1.PermuteRows(new List<int> { 2, 3, 1 });
+            Console.WriteLine(square1.ToString());
+            Console.WriteLine();
+
+            LatinSquare square2 = new LatinSquare(4);
+            square2.Fill(new List<int> { 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 2, 1, 4, 3, 1, 2 });
+
+            Console.WriteLine(square2.ToString());
+            Console.WriteLine();
+            square2.PermuteRows(new List<int> { 4, 1, 2, 3 });
+            Console.WriteLine(square2.ToString());
+            Console.WriteLine();
+            square2.PermuteRows(new List<int> { 2, 3, 4, 1});
+            Console.WriteLine(square2.ToString());
+            Console.WriteLine();
+        }
 
 
         [TestMethod]
