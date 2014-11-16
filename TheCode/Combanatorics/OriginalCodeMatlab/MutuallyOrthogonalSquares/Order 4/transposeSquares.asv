@@ -1,0 +1,17 @@
+fid = fopen('reduced_order4.dat');
+
+b = zeros(4, 4, 0);
+
+while (~feof(fid))
+   A = fscanf(fid, '%u', [4 4]);
+   A = A';
+   cat (3, b, A);
+end
+
+fclose('all');
+fid = fopen('reduced_order4.dat', 'a');
+[m,n,o] = size(b);
+
+for i=1:o
+   fprintf(fid, '%u %u %u %u 
+end

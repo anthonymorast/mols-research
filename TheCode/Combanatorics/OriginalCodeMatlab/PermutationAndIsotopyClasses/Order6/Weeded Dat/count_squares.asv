@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Reads in a bunch of files and adds the counts together.
+
+filename = 'isotopyclass';
+total = 0;
+fid2 = fopen('symmetricgroups.dat', 'w');
+b = zeros(1,);
+
+for i=1:22
+   %create file name
+   this_file = strcat(filename,int2str(i));
+   this_file = strcat(this_file, '-new');
+   this_file = strcat(this_file, '.dat');
+
+   fid = fopen(this_file);
+   
+   %count
+   while (~feof(fid))
+       A = fscanf (fid, '%u %u %u %u %u %u ', [6 6]);
+       if ( A == A' )
+           cat(1,i,b);
+       end
+       total = total +1;
+   end
+   
+   %close file
+   fclose('all');
+end
+
+disp(total);
+
+i = size(b)
+
+for j=1:i
+   fprintf(fid2, '%u', b(j)); 
+end
+
+fclose('all');

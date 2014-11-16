@@ -1,0 +1,30 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% High level logic for dealing with generating isotopy classes of order 6
+% since there are so many different representatives. Whereas with order 5
+% there was only 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%open file to read reps
+fid = fopen('order6_reps_notMckay.dat');
+b = zeros(6,6,0);
+
+i = 1;
+while (~feof(fid))
+    b(:,:,i) = fscanf(fid, '%u %u %u %u %u %u ',[6 6]);
+    i = i + 1;
+end
+
+filename = 'isotopyclass';
+[m,n,o] = size(b);
+%loop through reps passing them into function
+for i=1:o
+   this_file = strcat(filename, int2str(i));
+   A = b(:,:,i);
+   
+   BothOps(A, i);
+   
+   %pass filename to eq_ls 
+   eq_ls_6(this_file);
+end
+
+fclose('all');
