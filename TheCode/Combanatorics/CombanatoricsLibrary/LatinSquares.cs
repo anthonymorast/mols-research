@@ -171,6 +171,14 @@ namespace Combanatorics
             return ret_string;
         }
 
+        public bool IsEqual(LatinSquare ls)
+        {
+            if (this.values.Intersect(ls.values).Count() == squareOrder * squareOrder)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
     public static class LatinSquareExtensions
@@ -282,7 +290,7 @@ namespace Combanatorics
         /// </summary>
         /// <param name="ls"></param>
         /// <param name="newIndices"></param>
-        public static void PermuteRows (this LatinSquare ls, List<int> newIndices)
+        public static LatinSquare PermuteRows (this LatinSquare ls, List<int> newIndices)
         {
             if (newIndices.Count != ls.GetOrder())
                 throw new ApplicationException("Not enough indicies to swap in PermuteRows method.");
@@ -311,9 +319,17 @@ namespace Combanatorics
                 newVals = newVals.Concat(newRows[i]).ToList();
             }
 
-            ls.Fill(newVals);
+            return new LatinSquare(ls.GetOrder(), newVals);
         }
 
-        
+        public static bool IsNormal(this LatinSquare ls)
+        {
+            for (int i = 0; i < ls.GetOrder(); i++)
+            {
+                if (ls.GetElement(i+1, 1) != i+1 || ls.GetElement(1, i+1) != i+1)
+                    return false;
+            }
+            return true;
+        }
     }
 }

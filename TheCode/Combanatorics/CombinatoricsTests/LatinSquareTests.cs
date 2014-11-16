@@ -107,10 +107,10 @@ namespace CombinatoricsTests
 
             Console.WriteLine(square1.ToString());
             Console.WriteLine();
-            square1.PermuteRows(new List<int> { 1, 3, 2 });
+            square1 = square1.PermuteRows(new List<int> { 1, 3, 2 });
             Console.WriteLine(square1.ToString());
             Console.WriteLine();
-            square1.PermuteRows(new List<int> { 2, 3, 1 });
+            square1 = square1.PermuteRows(new List<int> { 2, 3, 1 });
             Console.WriteLine(square1.ToString());
             Console.WriteLine();
 
@@ -119,10 +119,10 @@ namespace CombinatoricsTests
 
             Console.WriteLine(square2.ToString());
             Console.WriteLine();
-            square2.PermuteRows(new List<int> { 4, 1, 2, 3 });
+            square2 = square2.PermuteRows(new List<int> { 4, 1, 2, 3 });
             Console.WriteLine(square2.ToString());
             Console.WriteLine();
-            square2.PermuteRows(new List<int> { 2, 3, 4, 1});
+            square2 = square2.PermuteRows(new List<int> { 2, 3, 4, 1 });
             Console.WriteLine(square2.ToString());
             Console.WriteLine();
         }
