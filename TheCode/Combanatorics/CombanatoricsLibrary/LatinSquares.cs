@@ -95,7 +95,7 @@ namespace Combanatorics
                 for (int j = 0; j < squareOrder; j++)
                 {
                     int currentElemnet = valueList[(i * squareOrder) + j];
-                    if ( currentElemnet > squareOrder || currentElemnet < 0)
+                    if ( currentElemnet > squareOrder || currentElemnet <= 0)
                     {
                         error = string.Format(
                             @"Element '{0}' in row {1} column {2} is outside of valid range values. A Latin square should contain elements from 1 to N, where N is the order of the square",
@@ -113,13 +113,13 @@ namespace Combanatorics
             {
                 if (rows[i].Distinct().Count() < squareOrder)
                 {
-                    error = "Row " + (i+1).ToString() + " doees not contain distinct elemnts.";
+                    error = "Row " + (i+1).ToString() + " does not contain distinct elemnts.";
                     return false;
                 }
 
                 if (cols[i].Distinct().Count() < squareOrder)
                 {
-                    error = "Column " + (i+1).ToString() + " doees not contain distinct elemnts.";
+                    error = "Column " + (i+1).ToString() + " does not contain distinct elemnts.";
                     return false;
                 }
             }
