@@ -113,13 +113,13 @@ namespace Combanatorics
             {
                 if (rows[i].Distinct().Count() < squareOrder)
                 {
-                    error = "Row " + (i+1).ToString() + " doees not contain distinct elemnts.";
+                    error = "Row " + (i+1).ToString() + " does not contain distinct elemnts.";
                     return false;
                 }
 
                 if (cols[i].Distinct().Count() < squareOrder)
                 {
-                    error = "Column " + (i+1).ToString() + " doees not contain distinct elemnts.";
+                    error = "Column " + (i+1).ToString() + " does not contain distinct elemnts.";
                     return false;
                 }
             }
