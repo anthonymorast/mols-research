@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -11,26 +12,27 @@ class LatinSquare
 {
     public:
 	LatinSquare (int order);
-	LatinSquare (int order, int values[]);
-	void Fill  (int values[]);
+	LatinSquare (int order, vector<int> values);
+	void Fill  (vector<int> values);
 	int GetOrder ();
 	bool IsOrthogonal (LatinSquare checkSq);
 	bool IsSameIsotopyClass (LatinSquare checkSq);
 	bool IsSameMainClass (LatinSquare checkSq);
 	int GetElementAtPosition (int row, int column);
-	LatinSquare PermuteRows (int newIndices[]);
+	LatinSquare PermuteRows (vector<int> newIndices);
 	bool IsNormal ();
+	void Print();
 
     protected:
 	int GetElement (int row, int col);
-	bool CheckValues (int valueList[], string error);
-	void SetValues (int valueList[]);
+	bool CheckValues (vector<int> valueList, string &error);
+	void SetValues (vector<int> valueList);
 	 
     private:
 	string to_string(int value);
         bool Distinct (int rowOrCol[]);
 	int squareOrder;
-	int *values;	
+	vector<int> values;	
 };
 
 LatinSquare::LatinSquare (int order)
@@ -38,13 +40,13 @@ LatinSquare::LatinSquare (int order)
     squareOrder = order;
 }
 
-LatinSquare::LatinSquare (int order, int valueList[])
+LatinSquare::LatinSquare (int order, vector<int> valueList)
 {
     squareOrder = order;
     SetValues(valueList);
 }
 
-void LatinSquare::Fill (int valueList[])
+void LatinSquare::Fill (vector<int> valueList)
 {
     SetValues(valueList);
 }
@@ -56,16 +58,47 @@ int LatinSquare::GetOrder()
 
 bool LatinSquare::IsOrthogonal (LatinSquare checksq)
 {
-    return false;
+    vector<int> currentPair;
+    vector< vector<int> > pairs;
+
+    currentPair.push_back(0);
+    currentPair.push_back(0);
+
+    for (int i = 0; i < squareOrder; i++)
+    {
+	for (int j = 0; j < squareOrder; j++)
+	{
+	    currentPair[0] = GetElementAtPosition(i+1, j+1);
+	    currentPair[1] = checksq.GetElementAtPosition(i+1, j+1);
+ 
+ 	    if (!pairs.empty())
+	    {
+		if (find(pairs.begin(), pairs.end(), currentPair) != pairs.end())
+		    return false;
+		else 
+		    pairs.push_back(currentPair);
+	    }
+	    else 
+		pairs.push_back(currentPair);
+	}
+    } 
+
+    return true;
 }
 
 bool LatinSquare::IsSameIsotopyClass (LatinSquare checkSq)
 {
+    printf("IsSameIsotopyClass not yet implemented.");
+    throw new exception;
+
     return false;
 }
 
 bool LatinSquare::IsSameMainClass (LatinSquare checkSq)
 {
+    printf ("IsSameIsotopyClass not yet implemented.");
+    throw new exception;
+
     return false;
 }
 
@@ -74,9 +107,46 @@ int LatinSquare::GetElementAtPosition (int row, int column)
     return GetElement(row, column);
 }
 
-LatinSquare LatinSquare::PermuteRows (int newIndicies[])
+LatinSquare LatinSquare::PermuteRows (vector<int> newIndices)
 {
-    LatinSquare newSq(0);
+    if (newIndices.size() != squareOrder)
+    {
+	cout << "Not enough indices to swap in PermuteRows method." << endl;
+	throw new exception;
+    }
+
+    cout  << "here" << endl;
+    
+    vector< vector<int> > oldRows;
+    vector< vector<int> > newRows;
+    
+    for (int i = 0; i < squareOrder; i++)
+    {
+	vector<int> row;
+	for (int j = 0; j < squareOrder; j++)
+	    row.push_back(GetElementAtPosition(i+1, j+1));
+	
+	oldRows.push_back(row);
+    }
+
+    cout << "here1" << endl;
+
+    vector<int> newVals;
+    for (int i = 0; i < squareOrder; i++)
+    {
+	if (newIndices[i] > squareOrder || newIndices[i] < 1)
+	{
+	    cout << "Invalid index in new indices list in PermuteRows method." << endl;
+	    throw new exception;
+        }
+
+	newRows.push_back(oldRows[newIndices[i] - 1]);
+	vector<int> current = newRows[i];
+	for (int j = 0; j < newRows[i].size(); j++)
+	    newVals.push_back(current[j]);
+    }
+   
+    LatinSquare newSq (squareOrder, newVals);
 
     return newSq;
 }
@@ -94,10 +164,12 @@ int LatinSquare::GetElement (int row, int col)
 	throw new exception;
     }
 
-    return 0;
+    row--;
+    col--;
+    return values[(row*squareOrder) + col];
 }
 
-bool LatinSquare::CheckValues (int valueList[], string error)
+bool LatinSquare::CheckValues (vector<int> valueList, string &error)
 {
     int **rows = new int *[squareOrder];
     int **cols = new int *[squareOrder];    
@@ -146,9 +218,9 @@ bool LatinSquare::CheckValues (int valueList[], string error)
     return true;
 }
 
-void LatinSquare::SetValues (int valueList[])
+void LatinSquare::SetValues (vector<int> valueList)
 {
-    int size = (sizeof(valueList)/sizeof(*valueList));
+    int size = valueList.size();
     string error = "";
 
     if (size != (squareOrder*squareOrder))
@@ -186,4 +258,19 @@ bool LatinSquare::Distinct (int rowOrCol[])
     }
 
     return true;
+}
+
+void LatinSquare::Print()
+{
+    string printString = "";    
+
+    for (int i = 0; i < squareOrder*squareOrder; i++)
+    {
+	if (i % squareOrder == 0 && i != 0)
+	    printString += "\n";
+
+	printString += to_string(values[i]) + " ";
+    }
+
+    cout << printString << endl;
 }
