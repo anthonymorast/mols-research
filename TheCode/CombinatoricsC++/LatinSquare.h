@@ -114,8 +114,6 @@ LatinSquare LatinSquare::PermuteRows (vector<int> newIndices)
 	cout << "Not enough indices to swap in PermuteRows method." << endl;
 	throw new exception;
     }
-
-    cout  << "here" << endl;
     
     vector< vector<int> > oldRows;
     vector< vector<int> > newRows;
@@ -128,8 +126,6 @@ LatinSquare LatinSquare::PermuteRows (vector<int> newIndices)
 	
 	oldRows.push_back(row);
     }
-
-    cout << "here1" << endl;
 
     vector<int> newVals;
     for (int i = 0; i < squareOrder; i++)
