@@ -11,3 +11,9 @@ C:\Users\Anthony Morast\Documents\GitHub\MathLibrary\TheCode\Combanatorics\Latin
 C:\Users\Anthony Morast\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\bin\Debug\LatinSquaresOrthogonal.exe
 C:\Users\Anthony Morast\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\bin\Debug\LatinSquaresOrthogonal.pdb
 C:\Users\Anthony Morast\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\obj\Debug\LatinSquaresOrthogonal.csprojResolveAssemblyReference.cache
+F:\Users\anthony\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\bin\Debug\LatinSquaresOrthogonal.exe.config
+F:\Users\anthony\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\obj\Debug\LatinSquaresOrthogonal.exe
+F:\Users\anthony\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\obj\Debug\LatinSquaresOrthogonal.pdb
+F:\Users\anthony\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\bin\Debug\LatinSquaresOrthogonal.exe
+F:\Users\anthony\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\bin\Debug\LatinSquaresOrthogonal.pdb
+F:\Users\anthony\Documents\GitHub\MathLibrary\TheCode\Combanatorics\LatinSquaresOrthogonal\LatinSquaresOrthogonal\obj\Debug\LatinSquaresOrthogonal.csprojResolveAssemblyReference.cache
