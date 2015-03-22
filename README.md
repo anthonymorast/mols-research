@@ -1,4 +1,4 @@
-Combinatorics Library
+Mathematics Library
 ====================
 
-A combinatorics library written as a C# dynamically linked library (dll) with a focus on Latin squares. 
+A set of libraries and classes that contain useful obcjects and methods used in combinatorics and numerical analysis. 
