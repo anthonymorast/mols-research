@@ -7,7 +7,7 @@
   + Line 1: The first line in the file should be the order of the Latin squares
   + Subsequent Lines: Each other line in the file should contain one Latin square
     
-  Furthermore each line in the file representing a Latin square should take this form:
+Furthermore each line in the file representing a Latin square should take this form:
   + Each  line will have *n* sections each containing *n* numbers which form the Latin square. The sections will be 0-based 
     sequences and will be separated by a space.
     + Section: 01234...*n*
