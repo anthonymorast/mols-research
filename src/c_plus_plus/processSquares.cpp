@@ -4,6 +4,7 @@
 #include <string>  
 #include <fstream> // file I/O
 #include <sstream> // string to int
+#include <stdlib.h> // atol 
 
 /* Custom Classes and Libraries */
 #include "LatinSquare.h" // Latin square class
@@ -11,14 +12,16 @@
 using namespace std;
 
 /* Globals */
+int SQUARE_ORDER = 0;
 
 /* Functions */
-bool valid_args(int arg_count, char* args);
+bool valid_args(int arg_count, char* args[]);
 void print_usage();
-vector<LatinSquare> generate_reduced_squares(vector<vector<int>> permutations, vector<LatinSquare> normalizedSquares);
-vector<vector<int>> read_permutations(string filename);
+vector<LatinSquare> generate_reduced_squares(vector< vector<int> > permutations, vector<LatinSquare> normalizedSquares);
+vector< vector<int> > read_permutations(string filename);
 vector<LatinSquare> read_normalized_squares(string filename);
 void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename, int numThreads);
+long string_to_formatted_long(string value);
 
 /*
 * main - main flow of the program 
@@ -31,23 +34,23 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 */
 int main (int argc, char* argv[]) 
 {
-  if (!valid_args(argc, argv[])) 
-  {
-    return 0;
-  }
-  
-  int numThreads;
-  stringstream(argv[3]) >> numThreads;
-  
-  string normalizedFileName(argv[0]);
-  string permutationFile(argv[1]);
-  string outputFile(argv[2]);
-  
-  vector<LatinSquare> normalizedSqaures = read_normalized_squares(normalizedFileName);
-  vector<vector<int>> permutations = read_permutations(permutationFile);
-  vector<LatinSquare> reducedSquares = generate_reduced_squares(permutations, normalizedSquares);
-  
-  find_orthogonal_squares(reducedSquares, outputFile, numThreads);
+	if (!valid_args(argc, argv)) 
+	{
+		return 0;
+	}
+	
+	int numThreads = 8;
+	stringstream(argv[4]) >> numThreads;
+	
+	string normalizedFileName(argv[1]);
+	string permutationFile(argv[2]);
+	string outputFile(argv[3]);
+	
+	vector<LatinSquare> normalizedSquares = read_normalized_squares(normalizedFileName);
+	vector< vector<int> > permutations = read_permutations(permutationFile);
+	vector<LatinSquare> reducedSquares = generate_reduced_squares(permutations, normalizedSquares);
+	 
+	find_orthogonal_squares(reducedSquares, outputFile, numThreads);
 }
 
 /*
@@ -60,9 +63,13 @@ int main (int argc, char* argv[])
 *
 * @return a vector of reduced Latin squares of a particular order
 */
-vector<LatinSquare> generate_reduced_squares(vector<vector<int>> permutations, vector<LatinSquare> normalizedSquares)
+vector<LatinSquare> generate_reduced_squares(vector< vector<int> > permutations, vector<LatinSquare> normalizedSquares)
 {
-  
+	vector<LatinSquare> squares;
+
+
+
+	return squares;
 }
 
 /*
@@ -74,9 +81,47 @@ vector<LatinSquare> generate_reduced_squares(vector<vector<int>> permutations, v
 *
 * @return a vector of vectors where each inner vector is one permutation
 */
-vector<vector<int>> read_permutations(string filename) 
+vector< vector<int> > read_permutations(string filename) 
 {
-  
+ 	vector< vector<int> > permutations;
+
+ 	ifstream fin;
+	fin.open(filename.c_str());
+	if (!fin.is_open() ) 
+	{
+		cout << "Unable to open permutations file \"" << filename << "\" exiting..." << endl;
+		exit(0); 
+	}
+
+	int permSize;
+	fin >> permSize;
+
+	if ( permSize != (SQUARE_ORDER - 1) )
+	{
+		cout << "File \"" << filename << "\" is not in the correct format or ";
+		cout << "contains permutations of the wrong size. Refer to /docs/formats/permutationsFiles.md ";
+		cout << "for more information." << endl;
+		exit(0);
+	}
+
+	int value;
+	vector<int> permutation;
+	int i = 0;
+	while (fin >> value) 
+	{
+
+		if ( i % permSize == 0 && i != 0) 
+		{
+			permutations.push_back(permutation);
+			permutation.clear();
+		}
+
+		permutation.push_back(value);
+		i++;
+	}
+
+	fin.close();
+ 	return permutations; 
 }
 
 /*
@@ -90,7 +135,95 @@ vector<vector<int>> read_permutations(string filename)
 */
 vector<LatinSquare> read_normalized_squares(string filename) 
 {
-  
+	vector<LatinSquare> squares;
+
+	ifstream fin;
+	fin.open(filename.c_str());
+	if (!fin.is_open() ) 
+	{
+		cout << "Unable to open normalized squares file \"" << filename << "\" exiting..." << endl;
+		exit(0); 
+	}
+
+	// get the square order from the file (/docs/formats/normalizedSquareFiles.md)
+	fin >> SQUARE_ORDER;
+
+	string value;
+	while (fin >> value) 
+	{
+		vector<int> values;
+		long longValue = string_to_formatted_long(value);
+
+		for (int j = SQUARE_ORDER; j > 0; j--)
+		{
+			int divisor = 1;
+			for (int k = 1; k < j; k++)
+			{
+				divisor *= 10;
+			}
+			int mod = divisor * 10;
+
+			int current = j == 6 ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+			values.push_back(current);
+		}
+
+		for (int i = 0; i < SQUARE_ORDER-1; i++) 
+		{
+			fin >> value;
+			longValue = string_to_formatted_long(value);
+
+			for (int j = SQUARE_ORDER; j > 0; j--)
+			{
+				int divisor = 1;
+				for (int k = 1; k < j; k++)
+				{
+					divisor *= 10;
+				}
+				int mod = divisor * 10;
+
+				int current = j == 6 ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+				values.push_back(current);
+			}
+		}
+
+		LatinSquare square(SQUARE_ORDER, values);
+		values.clear();
+		squares.push_back(square);
+
+		cout << square.ToString() << endl << endl;
+	}
+
+	return squares;
+}
+
+/*
+* string_to_formatted_long
+*
+* Converts a string value in "McKay Format" (0-based, clustered e.g. 012345) to a usable format for us
+* e.g. 12345.
+*
+* @param value - string value to be converted to long value
+*/
+long string_to_formatted_long(string value) 
+{
+	string formattedString;
+	for (std::string::iterator it = value.begin(); it != value.end(); ++it)
+	{
+		int dummy;
+		stringstream ss;
+		ss << *it;
+
+		string str;
+		ss >> str;
+		stringstream(str) >> dummy;
+
+		stringstream ss1;
+		dummy++;
+		ss1 << dummy;
+		formattedString += ss1.str();
+	}
+
+	return atol(formattedString.c_str());
 }
 
 /*
@@ -118,16 +251,16 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 *
 * @return true if valid, false otherwise
 */
-bool valid_args (int arg_count, char* args) 
+bool valid_args (int arg_count, char* args[]) 
 {
-  if (arg_count != 4) 
-  {
-    cout << "Incorrect number of command line arguments." << endl;
-    print_usage();
-    return false;
-  }
-  
-  
+  	if (arg_count != 5) 
+  	{
+    	cout << "Incorrect number of command line arguments." << endl;
+    	print_usage();
+    	return false;
+  	}
+   	
+   	return true;
 }
 
 /*
@@ -137,14 +270,14 @@ bool valid_args (int arg_count, char* args)
 */
 void print_usage() 
 {
-  cout << endl;
-  cout << "Usage:" << endl;
-  cout << "\tprocessSquares <normalized squares file> <permutations file> <output file name> <# threads>" << endl;
-  cout << endl;
-  cout << "Details:" << endl;
-  cout << "\t<normalized square file> - must follow format outlined in docs/formats/normalizedSqaureFiles.md" << endl;
-  cout << "\t<permutatins file> - must follow the format outlined in docs/formats/permutationFiles.md" << endl;
-  cout << "\t<output filename> - the name of the file to be written to" << endl;
-  cout << "\t<# threads> - the number of threads to be used in computations" << endl;
-  cout << endl;
+	cout << endl;
+	cout << "Usage:" << endl;
+	cout << "\tprocessSquares <normalized squares file> <permutations file> <output file name> <# threads>" << endl;
+	cout << endl;
+	cout << "Details:" << endl;
+	cout << "\t<normalized square file> - must follow format outlined in docs/formats/normalizedSqaureFiles.md" << endl;
+	cout << "\t<permutatins file> - must follow the format outlined in docs/formats/permutationFiles.md" << endl;
+	cout << "\t<output filename> - the name of the file to be written to" << endl;
+	cout << "\t<# threads> - the number of threads to be used in computations" << endl;
+	cout << endl;
 }

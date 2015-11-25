@@ -18,4 +18,7 @@ Furthermore each line in the file representing a Latin square should take this f
   titled undergradReport.pdf in the root of the 'docs' directory in this repository. There seems to be no standard definitions
   of some of these terms and this report outlines the definitions we used for the sake of this research.
 
+  Blank lines are not handled by this program. Do no have blank lines in your files. A file with a blank line SHOULD work, but
+  is not gauranteed to work.
+
 ** This format is subject to change. Be sure to check back if you are having issues.

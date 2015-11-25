@@ -22,6 +22,7 @@ class LatinSquare
 	LatinSquare PermuteRows (vector<int> newIndices);
 	bool IsNormal ();
 	void Print();
+    string ToString();
 
     protected:
 	int GetElement (int row, int col);
@@ -258,15 +259,27 @@ bool LatinSquare::Distinct (int rowOrCol[])
 
 void LatinSquare::Print()
 {
+    cout << ToString() << endl;
+}
+
+string LatinSquare::ToString() 
+{
     string printString = "";    
 
-    for (int i = 0; i < squareOrder*squareOrder; i++)
+    if (values.size() > 0) 
     {
-	if (i % squareOrder == 0 && i != 0)
-	    printString += "\n";
+        for (int i = 0; i < squareOrder*squareOrder; i++)
+        {
+            if (i % squareOrder == 0 && i != 0)
+                printString += "\n";
 
-	printString += to_string(values[i]) + " ";
+            printString += to_string(values[i]) + " ";
+        }
+    }
+    else 
+    {
+        cout << "An empty Latin square of order " << squareOrder << "." << endl;
     }
 
-    cout << printString << endl;
+    return printString;
 }

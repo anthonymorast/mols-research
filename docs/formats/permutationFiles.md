@@ -13,12 +13,15 @@
   particular format. The format is as follows, 
   + Row 1: The first row in the file must contain the number of elements being permuted, e.g. '5' for the permutations of the
     numbers 1, 2, 3, 4, and 5.
-  + All subsequent rows: Each subsequent row in the file can either be blank (for whatever reason) or contain a permutation
+  + All subsequent rows: Each subsequent row in the file must  contain a permutation
     of the numbers. Each number in the permutation should be separated by a space, i.e. '1 3 4 5 2' vs. '13452'. 
 
 ##Notes
   For particular definitions of the terms used here, e.g. normalized and reduced, please reference the paper title 
   undergradReport.pdf in the root of the 'docs' directory in this repository. There seems to be no standard definitions of 
   some of these terms and this report outlines the definitions we used for the sake of this research. 
+
+  Blank lines are not handled by this program. Do no have blank lines in your files. A file with a blank line SHOULD work, but
+  is not gauranteed to work.
   
   ** This format is subject to change. Be sure to check back if you are having issues. 
