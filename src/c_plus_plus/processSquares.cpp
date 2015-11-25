@@ -5,14 +5,29 @@
 #include <fstream> // file I/O
 #include <sstream> // string to int
 #include <stdlib.h> // atol 
+#include <pthread.h> // multithreading
+#include "mpi.h" // multithreading
+#include <ctype.h> // isDigit - valid args
+#include <stdio.h> // printf
+#include <time.h> // program timing - clock
+#include <dirent.h> // directory operations
+#include <sys/stat.h> // mkdir
 
 /* Custom Classes and Libraries */
 #include "LatinSquare.h" // Latin square class
 
 using namespace std;
 
-/* Globals */
+/* Globals, Structs, etc. */
 int SQUARE_ORDER = 0;
+int NUMBER_THREADS = 1;
+
+struct GenerateReduceParams 
+{
+	int id;
+	vector<LatinSquare> squares;
+	vector< vector<int> > permutations;
+};
 
 /* Functions */
 bool valid_args(int arg_count, char* args[]);
@@ -20,8 +35,9 @@ void print_usage();
 vector<LatinSquare> generate_reduced_squares(vector< vector<int> > permutations, vector<LatinSquare> normalizedSquares);
 vector< vector<int> > read_permutations(string filename);
 vector<LatinSquare> read_normalized_squares(string filename);
-void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename, int numThreads);
+void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename);
 long string_to_formatted_long(string value);
+void *threaded_reduce (void *params);
 
 /*
 * main - main flow of the program 
@@ -41,20 +57,82 @@ int main (int argc, char* argv[])
 	
 	int numThreads = 8;
 	stringstream(argv[4]) >> numThreads;
-	
+	NUMBER_THREADS = numThreads;
+
 	string normalizedFileName(argv[1]);
 	string permutationFile(argv[2]);
 	string outputFile(argv[3]);
 	
+	// clock_t start, end;
+	// start = clock();
+
+	cout << endl;
+	cout << "Reading normalized squares file \"" << normalizedFileName << "\"..." << endl;  
 	vector<LatinSquare> normalizedSquares = read_normalized_squares(normalizedFileName);
+
+	cout << "Reading permuations file \"" << permutationFile << "\"..." << endl;
 	vector< vector<int> > permutations = read_permutations(permutationFile);
+
+	cout << "Generating reduced Latin squares of order " <<  SQUARE_ORDER << "..." << endl; 
 	vector<LatinSquare> reducedSquares = generate_reduced_squares(permutations, normalizedSquares);
 
+	cout << endl;
 	cout << "Normalized Squares: " << normalizedSquares.size() << endl;
 	cout << "Permutations: " << permutations.size() << endl;
 	cout << "Reduced Squares: " << reducedSquares.size() << endl;
+	cout << endl;
 	 
-	find_orthogonal_squares(reducedSquares, outputFile, numThreads);
+	cout << "Finding sets mutually orthogonal Latin squares..." << endl;
+	find_orthogonal_squares(reducedSquares, outputFile);
+	cout << endl;
+
+	// end = clock();
+
+	// float diff ((float)end - (float)start);
+	// cout << "Total run time (in seconds): " << diff/CLOCKS_PER_SEC << endl; 
+	//TODO - talk to Karlsson about thread safe timing
+}
+
+/*
+* find_orthogonal_squares
+* 
+* finds all squares orthogonal with one another in the reducedSquares vector and prints them to file 'filename'
+*
+* @param reducedSquares - vector containing all reduced squares of a particular order
+* @param filename - name of the file to be written
+* @param numThreads - number of threads to run
+*/
+void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename)
+{
+	ofstream fout;
+	fout.open(filename.c_str(), std::ofstream::out);
+	if (!fout.is_open())
+	{
+		cout << "There was an error opening the output file \"" << filename << "\" exiting...";
+		exit(0);
+	}
+
+	bool writeLog = true;
+	ofstream logOut;
+	DIR *logDir;
+	logDir = opendir("./log");
+	if (logDir == NULL)
+	{
+		mkdir("./log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	}
+	logOut.open("./log/log.txt", std::ofstream::out);
+
+	// Break problem into smaller parts (be sure to assign first threads more squares than later threads)
+	// Launch the threads (use MPI here probably)
+	// Write to log file things like number squares per thread and what not
+	// If there is a MO square write it to fout
+	// Maybe open the files in each MPI thread and have a mutually exclusive section to write to them
+	//    then write the current square being processed out of how many for each thread
+	// Consider getting the number of cores for each MPI node and splitting the squares again 
+	//    into smaller pthreads
+
+	fout.close();
+	logOut.close();
 }
 
 /*
@@ -71,9 +149,77 @@ vector<LatinSquare> generate_reduced_squares(vector< vector<int> > permutations,
 {
 	vector<LatinSquare> squares;
 
+	pthread_t *threads = new pthread_t[NUMBER_THREADS];
+	GenerateReduceParams *params = new GenerateReduceParams[NUMBER_THREADS];
 
+	int totalCount = 0;
+	int each = normalizedSquares.size() / NUMBER_THREADS;
+	int lastSize = 
+		each * NUMBER_THREADS != normalizedSquares.size() ?
+		(normalizedSquares.size() - (each * NUMBER_THREADS-1)) + each-1 :
+		each;
+
+	int currParam = 0;
+	int count = 0;
+	for (vector<LatinSquare>::iterator it = normalizedSquares.begin(); it != normalizedSquares.end(); it++) 
+	{
+		if (currParam < NUMBER_THREADS-1 && count == each)
+		{
+			currParam++;
+			count = 0;
+		}
+		LatinSquare sq = *it;
+		params[currParam].squares.push_back(sq);
+		count++;
+	}
+
+	for (int i = 0; i < NUMBER_THREADS; i++)
+	{
+		params[i].id = i;
+		params[i].permutations = permutations;
+		pthread_create(&(threads[i]), NULL, threaded_reduce, &params[i]); 
+	}
+
+	for (int i = 0; i < NUMBER_THREADS; i++)
+	{
+		pthread_join(threads[i], NULL);
+	}
+
+	for (int i = 0; i < NUMBER_THREADS; i++)
+	{
+		squares.insert(squares.end(), params[i].squares.begin(), params[i].squares.end());
+	}
 
 	return squares;
+}
+
+/*
+* threaded_reduce 
+*
+* This function is to be called by each individual thread to find a subset of the reduced Latin squares
+* each vector will be contcatenated into the main vector after execution.
+*
+* @param params - GenerateReducedParams struct containing all parameters for this threaded function
+*/
+void *threaded_reduce (void *params)
+{
+	struct GenerateReduceParams *param = (struct GenerateReduceParams*)params;
+
+	vector<LatinSquare> squares = param->squares;
+	param->squares.clear();
+	vector< vector<int> > permutations = param->permutations;
+	int id = param->id;
+
+	for (int i = 0; i < squares.size(); i++) 
+	{
+		LatinSquare currSquare = squares.at(i);
+		for (int j = 0; j < permutations.size(); j++) 
+		{
+			vector<int> permutation = permutations.at(j);
+			param->squares.push_back(currSquare.PermuteRows(permutation));
+		}
+		// printf("\tThread %d processing square %d of %d...\n", id, i, squares.size());
+	}
 }
 
 /*
@@ -110,6 +256,7 @@ vector< vector<int> > read_permutations(string filename)
 
 	int value;
 	vector<int> permutation;
+	permutation.push_back(1);
 	int i = 0;
 	while (fin >> value) 
 	{
@@ -117,9 +264,10 @@ vector< vector<int> > read_permutations(string filename)
 		{
 			permutations.push_back(permutation);
 			permutation.clear();
+			permutation.push_back(1);
 		}
 
-		permutation.push_back(value);
+		permutation.push_back(value + 1);
 		i++;
 	}
 	permutations.push_back(permutation);
@@ -232,20 +380,6 @@ long string_to_formatted_long(string value)
 }
 
 /*
-* find_orthogonal_squares
-* 
-* finds all squares orthogonal with one another in the reducedSquares vector and prints them to file 'filename'
-*
-* @param reducedSquares - vector containing all reduced squares of a particular order
-* @param filename - name of the file to be written
-* @param numThreads - number of threads to run
-*/
-void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename, int numThreads)
-{
-  
-}
-
-/*
 * valid_args
 * 
 * Validates the arguments passed into the program. Prints an error message and returns false
@@ -264,6 +398,17 @@ bool valid_args (int arg_count, char* args[])
     	print_usage();
     	return false;
   	}
+
+  	string threadString = args[4];
+  	for (int i = 0; i < threadString.length(); i++)
+  	{
+	  	if (!isdigit(args[4][i])) 
+	  	{
+	  		cout << "Number of threads must be an integer." << endl;
+	  		print_usage();
+	  		return false;
+	  	}
+	}
    	
    	return true;
 }

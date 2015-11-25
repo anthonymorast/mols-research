@@ -11,29 +11,29 @@ using namespace std;
 class LatinSquare 
 {
     public:
-	LatinSquare (int order);
-	LatinSquare (int order, vector<int> values);
-	void Fill  (vector<int> values);
-	int GetOrder ();
-	bool IsOrthogonal (LatinSquare checkSq);
-	bool IsSameIsotopyClass (LatinSquare checkSq);
-	bool IsSameMainClass (LatinSquare checkSq);
-	int GetElementAtPosition (int row, int column);
-	LatinSquare PermuteRows (vector<int> newIndices);
-	bool IsNormal ();
-	void Print();
-    string ToString();
+    	LatinSquare (int order);
+    	LatinSquare (int order, vector<int> values);
+    	void Fill  (vector<int> values);
+    	int GetOrder ();
+    	bool IsOrthogonal (LatinSquare checkSq);
+    	bool IsSameIsotopyClass (LatinSquare checkSq);
+    	bool IsSameMainClass (LatinSquare checkSq);
+    	int GetElementAtPosition (int row, int column);
+    	LatinSquare PermuteRows (vector<int> newIndices);
+    	bool IsNormal ();
+    	void Print();
+        string ToString();
 
     protected:
-	int GetElement (int row, int col);
-	bool CheckValues (vector<int> valueList, string &error);
-	void SetValues (vector<int> valueList);
+    	int GetElement (int row, int col);
+    	bool CheckValues (vector<int> valueList, string &error);
+    	void SetValues (vector<int> valueList);
 	 
     private:
-	string to_string(int value);
+    	string to_string(int value);
         bool Distinct (int rowOrCol[]);
-	int squareOrder;
-	vector<int> values;	
+    	int squareOrder;
+    	vector<int> values;	
 };
 
 LatinSquare::LatinSquare (int order)
@@ -121,26 +121,26 @@ LatinSquare LatinSquare::PermuteRows (vector<int> newIndices)
     
     for (int i = 0; i < squareOrder; i++)
     {
-	vector<int> row;
-	for (int j = 0; j < squareOrder; j++)
-	    row.push_back(GetElementAtPosition(i+1, j+1));
-	
-	oldRows.push_back(row);
+    	vector<int> row;
+    	for (int j = 0; j < squareOrder; j++)
+    	    row.push_back(GetElementAtPosition(i+1, j+1));
+    	
+    	oldRows.push_back(row);
     }
 
     vector<int> newVals;
     for (int i = 0; i < squareOrder; i++)
     {
-	if (newIndices[i] > squareOrder || newIndices[i] < 1)
-	{
-	    cout << "Invalid index in new indices list in PermuteRows method." << endl;
-	    throw new exception;
+    	if (newIndices[i] > squareOrder || newIndices[i] < 1)
+	    {
+	       cout << "Invalid index in new indices list in PermuteRows method." << endl;
+	       throw new exception;
         }
 
-	newRows.push_back(oldRows[newIndices[i] - 1]);
-	vector<int> current = newRows[i];
-	for (int j = 0; j < newRows[i].size(); j++)
-	    newVals.push_back(current[j]);
+    	newRows.push_back(oldRows[newIndices[i] - 1]);
+    	vector<int> current = newRows[i];
+    	for (int j = 0; j < newRows[i].size(); j++)
+    	    newVals.push_back(current[j]);
     }
    
     LatinSquare newSq (squareOrder, newVals);
