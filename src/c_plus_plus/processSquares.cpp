@@ -154,6 +154,7 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 		}
 	}
 	
+	MPI_Finalize();
 	// If there is a MO square write it to fout
 	// Maybe open the files in each MPI thread and have a mutually exclusive section to write to them
 	//    then write the current square being processed out of how many for each thread
