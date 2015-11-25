@@ -121,10 +121,39 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 		mkdir("./log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	}
 	logOut.open("./log/log.txt", std::ofstream::out);
+	if (!logOut.is_open()) 
+	{
+		writeLog = false;
+	}
+	
+	int rank;	// id/rank
+	int comm_sz; 	// number of nodes/processors
+	vector<LatinSquare> mySquares;
 
 	// Break problem into smaller parts (be sure to assign first threads more squares than later threads)
 	// Launch the threads (use MPI here probably)
-	// Write to log file things like number squares per thread and what not
+	MPI_Init(NULL, NULL):
+	MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	
+	// get squares for the thread
+	int count = 1;
+	for (vector<LatinSquare>::iterator it = mySquares.begin(); it != mySquares.end(); it++)
+	{
+		printf("\tThread %d processing square %d of %d...\n", rank, count, mySquares.size());
+		LatinSquare currentSquare = *it;
+		for (int i = 0; i < squares.size(); i++)
+		{
+			LatinSquare checkSquare = squares.at(i);
+			// check orthogonal
+		}
+		count++;
+		if (count % 100 == 0)
+		{
+			// write current square to log file
+		}
+	}
+	
 	// If there is a MO square write it to fout
 	// Maybe open the files in each MPI thread and have a mutually exclusive section to write to them
 	//    then write the current square being processed out of how many for each thread
