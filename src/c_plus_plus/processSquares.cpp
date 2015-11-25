@@ -49,6 +49,10 @@ int main (int argc, char* argv[])
 	vector<LatinSquare> normalizedSquares = read_normalized_squares(normalizedFileName);
 	vector< vector<int> > permutations = read_permutations(permutationFile);
 	vector<LatinSquare> reducedSquares = generate_reduced_squares(permutations, normalizedSquares);
+
+	cout << "Normalized Squares: " << normalizedSquares.size() << endl;
+	cout << "Permutations: " << permutations.size() << endl;
+	cout << "Reduced Squares: " << reducedSquares.size() << endl;
 	 
 	find_orthogonal_squares(reducedSquares, outputFile, numThreads);
 }
@@ -109,7 +113,6 @@ vector< vector<int> > read_permutations(string filename)
 	int i = 0;
 	while (fin >> value) 
 	{
-
 		if ( i % permSize == 0 && i != 0) 
 		{
 			permutations.push_back(permutation);
@@ -119,6 +122,7 @@ vector< vector<int> > read_permutations(string filename)
 		permutation.push_back(value);
 		i++;
 	}
+	permutations.push_back(permutation);
 
 	fin.close();
  	return permutations; 
@@ -154,6 +158,7 @@ vector<LatinSquare> read_normalized_squares(string filename)
 		vector<int> values;
 		long longValue = string_to_formatted_long(value);
 
+		// Process first n numbers (otherwise the value from "while(fin >> value)" is ignored)
 		for (int j = SQUARE_ORDER; j > 0; j--)
 		{
 			int divisor = 1;
@@ -167,6 +172,7 @@ vector<LatinSquare> read_normalized_squares(string filename)
 			values.push_back(current);
 		}
 
+		// Process n-1 subsequent values
 		for (int i = 0; i < SQUARE_ORDER-1; i++) 
 		{
 			fin >> value;
@@ -189,10 +195,9 @@ vector<LatinSquare> read_normalized_squares(string filename)
 		LatinSquare square(SQUARE_ORDER, values);
 		values.clear();
 		squares.push_back(square);
-
-		cout << square.ToString() << endl << endl;
 	}
 
+	fin.close();
 	return squares;
 }
 
