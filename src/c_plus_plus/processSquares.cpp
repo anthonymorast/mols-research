@@ -130,6 +130,13 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 	//    then write the current square being processed out of how many for each thread
 	// Consider getting the number of cores for each MPI node and splitting the squares again 
 	//    into smaller pthreads
+	// Consdier testing this with order 5 first
+
+	// desired output:
+	//	 an output file of all the reduced Latin squares (the squares compared) 
+	// 	 a file containing the indexes in the file of squares (0-based) that were orthogonal ex. 1 0 if 1 and 0 are othogonal
+	//	 the actual squares that were orthogonal (obtained from the first two items) [maybe only need this, probably should do all for debugging]
+	// 	 
 
 	fout.close();
 	logOut.close();
