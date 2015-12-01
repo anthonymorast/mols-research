@@ -29,6 +29,14 @@ struct GenerateReduceParams
 	vector< vector<int> > permutations;
 };
 
+struct FindOrthogonalParams 
+{
+	int id;
+	vector<LatinSquare> mySquares;
+	vector<LatinSquare> reducedSquares;
+	int myStart;
+};
+
 /* Functions */
 bool valid_args(int arg_count, char* args[]);
 void print_usage();
@@ -38,6 +46,7 @@ vector<LatinSquare> read_normalized_squares(string filename);
 void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename);
 long string_to_formatted_long(string value);
 void *threaded_reduce (void *params);
+void *find_orthogonal_thread (void *params);
 
 /*
 * main - main flow of the program 
@@ -126,35 +135,43 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 		writeLog = false;
 	}
 	
-	int rank;	// id/rank
-	int comm_sz; 	// number of nodes/processors
-	vector<LatinSquare> mySquares;
+	// FOR MPI (LATER)
 
-	// Break problem into smaller parts (be sure to assign first threads more squares than later threads)
-	// Launch the threads (use MPI here probably)
-	MPI_Init(NULL, NULL):
-	MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	// int rank;	// id/rank
+	// int comm_sz; 	// number of nodes/processors
+	// int myStart;
+	// int totalSquares = reducedSquares.size();
+	// vector<LatinSquare> mySquares;
+
+	// // Break problem into smaller parts (be sure to assign first threads more squares than later threads)
+	// // Launch the threads (use MPI here probably)
+	// MPI_Init(NULL, NULL);
+	// MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+	// MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	
-	// get squares for the thread
-	int count = 1;
-	for (vector<LatinSquare>::iterator it = mySquares.begin(); it != mySquares.end(); it++)
-	{
-		printf("\tThread %d processing square %d of %d...\n", rank, count, mySquares.size());
-		LatinSquare currentSquare = *it;
-		for (int i = 0; i < squares.size(); i++)
-		{
-			LatinSquare checkSquare = squares.at(i);
-			// check orthogonal
-		}
-		count++;
-		if (count % 100 == 0)
-		{
-			// write current square to log file
-		}
-	}
+	// // get squares for the thread
+	// myStart = 0;
+	// int count = 1;
+	// for (vector<LatinSquare>::iterator it = reducedSquares.begin(); it != reducedSquares.end(); it++)
+	// {
+	// 	printf("\tNode %d processing square %d of %d...\n", rank, count, mySquares.size());
+	// 	LatinSquare currentSquare = *it;
+	// 	for (int i = myStart; i < reducedSquares.size(); i++)
+	// 	{
+	// 		LatinSquare checkSquare = reducedSquares.at(i);
+	// 		if (currentSquare.IsOrthogonal(checkSquare)) 
+	// 		{
+	// 			// write
+	// 			string currStr = currentSquare.ToString();
+	// 			string checkStr = checkSquare.ToString();
+	// 			printf("%s\n   and \n%s\nare mutually orthogonal.\n", currStr.c_str(), checkStr.c_str());
+	// 		}
+	// 	}
+	// 	count++;
+	// 	// log data
+	// }
 	
-	MPI_Finalize();
+	// MPI_Finalize();
 	// If there is a MO square write it to fout
 	// Maybe open the files in each MPI thread and have a mutually exclusive section to write to them
 	//    then write the current square being processed out of how many for each thread
@@ -168,8 +185,83 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 	//	 the actual squares that were orthogonal (obtained from the first two items) [maybe only need this, probably should do all for debugging]
 	// 	 
 
+	pthread_t *threads = new pthread_t[NUMBER_THREADS];
+	FindOrthogonalParams *params = new FindOrthogonalParams[NUMBER_THREADS];
+
+	int totalCount = 0;
+	int each = reducedSquares.size() / NUMBER_THREADS;
+	int lastSize = 
+		each * NUMBER_THREADS != reducedSquares.size() ?
+		(reducedSquares.size() - (each * NUMBER_THREADS-1)) + each-1 :
+		each;
+
+	int currParam = 0;
+	int count = 0;
+	for (vector<LatinSquare>::iterator it = reducedSquares.begin(); it != reducedSquares.end(); it++) 
+	{
+		if (currParam < NUMBER_THREADS-1 && count == each)
+		{
+			currParam++;
+			count = 0;
+		}
+		LatinSquare sq = *it;
+		params[currParam].mySquares.push_back(sq);
+		count++;
+		params[currParam].myStart = each*currParam;
+	}
+
+	for (int i = 0; i < NUMBER_THREADS; i++) 
+	{
+		params[i].reducedSquares = reducedSquares;
+		params[i].id = i;
+		pthread_create(&(threads[i]), NULL, find_orthogonal_thread, &params[i]); 
+	}
+
+	for (int i = 0; i < NUMBER_THREADS; i++)
+	{
+		pthread_join(threads[i], NULL);
+	}
+
+
 	fout.close();
 	logOut.close();
+}
+
+/*
+* find_orthogonal_thread
+*
+* 
+* @param FindOrthogonalParams - a structure containing the parameters required for find orthogonal squares
+*/
+void *find_orthogonal_thread (void *params) 
+{
+	struct FindOrthogonalParams *param = (struct FindOrthogonalParams*)params;
+
+	vector<LatinSquare> reducedSquares = param->reducedSquares; 
+	vector<LatinSquare> squares = param->mySquares;
+	int id = param->id;
+	int myStart = param->myStart;
+
+	cout << id << " " << reducedSquares.size() << " " << squares.size() << " " << myStart << endl; 
+	int count = 1;
+	for (vector<LatinSquare>::iterator it = squares.begin(); it != squares.end(); it++)
+	{
+		printf("\tNode %d processing square %d of %d...\n", id, count, squares.size());
+		LatinSquare currentSquare = *it;
+		for (int i = myStart; i < reducedSquares.size(); i++)
+		{
+			LatinSquare checkSquare = reducedSquares.at(i);
+			if (currentSquare.IsOrthogonal(checkSquare)) 
+			{
+				// write
+				string currStr = currentSquare.ToString();
+				string checkStr = checkSquare.ToString();
+				printf("%s\n   and \n%s\nare mutually orthogonal.\n", currStr.c_str(), checkStr.c_str());
+			}
+		}
+		count++;
+		// log data
+	}
 }
 
 /*
