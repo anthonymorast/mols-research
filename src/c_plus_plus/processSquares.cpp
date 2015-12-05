@@ -21,6 +21,11 @@ using namespace std;
 /* Globals, Structs, etc. */
 int SQUARE_ORDER = 0;
 int NUMBER_THREADS = 1;
+std::ofstream *fout;
+std::ofstream *logOut;
+pthread_mutex_t out_file_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t log_file_mutex = PTHREAD_MUTEX_INITIALIZER;
+bool writeLog;
 
 struct GenerateReduceParams 
 {
@@ -71,6 +76,20 @@ int main (int argc, char* argv[])
 	string normalizedFileName(argv[1]);
 	string permutationFile(argv[2]);
 	string outputFile(argv[3]);
+
+	fout = new std::ofstream("out.dat");
+	DIR *logDir;
+	logDir = opendir("./log");
+	if (logDir == NULL)
+	{
+		mkdir("./log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	}
+	writeLog = true;
+	logOut = new std::ofstream("./log/log.txt");
+	if (!logOut->is_open()) 
+	{
+		writeLog = false;
+	}
 	
 	// clock_t start, end;
 	// start = clock();
@@ -112,29 +131,7 @@ int main (int argc, char* argv[])
 * @param numThreads - number of threads to run
 */
 void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename)
-{
-	ofstream fout;
-	fout.open(filename.c_str(), std::ofstream::out);
-	if (!fout.is_open())
-	{
-		cout << "There was an error opening the output file \"" << filename << "\" exiting...";
-		exit(0);
-	}
-
-	bool writeLog = true;
-	ofstream logOut;
-	DIR *logDir;
-	logDir = opendir("./log");
-	if (logDir == NULL)
-	{
-		mkdir("./log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	}
-	logOut.open("./log/log.txt", std::ofstream::out);
-	if (!logOut.is_open()) 
-	{
-		writeLog = false;
-	}
-	
+{	
 	// FOR MPI (LATER)
 
 	// int rank;	// id/rank
@@ -199,6 +196,7 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 	int count = 0;
 	for (vector<LatinSquare>::iterator it = reducedSquares.begin(); it != reducedSquares.end(); it++) 
 	{
+		// currParam ~ id
 		if (currParam < NUMBER_THREADS-1 && count == each)
 		{
 			currParam++;
@@ -223,8 +221,8 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 	}
 
 
-	fout.close();
-	logOut.close();
+	fout->close();
+	logOut->close();
 }
 
 /*
@@ -241,12 +239,12 @@ void *find_orthogonal_thread (void *params)
 	vector<LatinSquare> squares = param->mySquares;
 	int id = param->id;
 	int myStart = param->myStart;
+	int total_squares = squares.size();
 
-	cout << id << " " << reducedSquares.size() << " " << squares.size() << " " << myStart << endl; 
 	int count = 1;
 	for (vector<LatinSquare>::iterator it = squares.begin(); it != squares.end(); it++)
 	{
-		printf("\tNode %d processing square %d of %d...\n", id, count, squares.size());
+		printf("\tNode %d processing square %d of %d...\n", id, count, total_squares);
 		LatinSquare currentSquare = *it;
 		for (int i = myStart; i < reducedSquares.size(); i++)
 		{
@@ -256,12 +254,26 @@ void *find_orthogonal_thread (void *params)
 				// write
 				string currStr = currentSquare.ToString();
 				string checkStr = checkSquare.ToString();
-				printf("%s\n   and \n%s\nare mutually orthogonal.\n", currStr.c_str(), checkStr.c_str());
+				
+				pthread_mutex_lock(&out_file_mutex);
+				*fout << checkSquare.ToString() << endl << "is orthogonal with" << endl;
+				*fout << currentSquare.ToString() << endl << endl << endl;
+				pthread_mutex_unlock(&out_file_mutex);
+				// printf("%s\n   and \n%s\nare mutually orthogonal.\n", currStr.c_str(), checkStr.c_str());
 			}
 		}
 		count++;
-		// log data
+		if (count % 10000 == 0)
+		{
+			pthread_mutex_lock(&log_file_mutex);
+			*logOut << "Process " << id << " has processed "<< count << " of " << total_squares << "." << endl;
+			pthread_mutex_unlock(&log_file_mutex);
+		}
 	}
+
+	pthread_mutex_lock(&log_file_mutex);
+	*logOut << "Process " << id << " finished processing " << total_squares << " squares." << endl;
+	pthread_mutex_unlock(&log_file_mutex);
 }
 
 /*

@@ -1,0 +1,4 @@
+Process 3 finished processing 336 squares.
+Process 2 finished processing 336 squares.
+Process 1 finished processing 336 squares.
+Process 0 finished processing 336 squares.
