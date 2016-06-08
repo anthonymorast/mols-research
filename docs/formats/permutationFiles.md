@@ -17,11 +17,11 @@
     of the numbers. Each number in the permutation should be separated by a space, i.e. '1 3 4 5 2' vs. '13452'. 
 
 ##Notes
-  For particular definitions of the terms used here, e.g. normalized and reduced, please reference the paper title 
+  For particular definitions of the terms used here, e.g. normalized and reduced, please reference the paper titled
   undergradReport.pdf in the root of the 'docs' directory in this repository. There seems to be no standard definitions of 
   some of these terms and this report outlines the definitions we used for the sake of this research. 
 
-  Blank lines are not handled by this program. Do no have blank lines in your files. A file with a blank line SHOULD work, but
+  Blank lines are not handled by this program. Do not have blank lines in your files. A file with a blank line SHOULD work, but
   is not gauranteed to work.
   
   ** This format is subject to change. Be sure to check back if you are having issues. 
