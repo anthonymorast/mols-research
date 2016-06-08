@@ -2,16 +2,16 @@
 #include <iostream>
 #include <vector>
 #include <string>  
-#include <fstream> // file I/O
-#include <sstream> // string to int
-#include <stdlib.h> // atol 
-#include <pthread.h> // multithreading
-#include "mpi.h" // multithreading
-#include <ctype.h> // isDigit - valid args
-#include <stdio.h> // printf
-#include <time.h> // program timing - clock
-#include <dirent.h> // directory operations
-#include <sys/stat.h> // mkdir
+#include <fstream> 	// file I/O
+#include <sstream> 	// string to int
+#include <stdlib.h> 	// atol 
+#include <pthread.h>	// multithreading
+#include "mpi.h" 	// multithreading
+#include <ctype.h> 	// isDigit - valid args
+#include <stdio.h> 	// printf
+#include <time.h> 	// program timing - clock
+#include <dirent.h> 	// directory operations
+#include <sys/stat.h> 	// mkdir
 
 /* Custom Classes and Libraries */
 #include "LatinSquare.h" // Latin square class
@@ -283,7 +283,6 @@ void *find_orthogonal_thread (void *params)
 *
 * @param permutations - all possible permutations of the numbers 1..(n-1) where n is the order of Latin square
 * @param normalizedSquares - a collection of Latin squares to be permuted
-*
 * @return a vector of reduced Latin squares of a particular order
 */
 vector<LatinSquare> generate_reduced_squares(vector< vector<int> > permutations, vector<LatinSquare> normalizedSquares)
@@ -369,7 +368,6 @@ void *threaded_reduce (void *params)
 * reads all permutations from the permutationsFile
 *
 * @param filename - name of the file containing the permutations
-*
 * @return a vector of vectors where each inner vector is one permutation
 */
 vector< vector<int> > read_permutations(string filename) 
@@ -397,7 +395,7 @@ vector< vector<int> > read_permutations(string filename)
 
 	int value;
 	vector<int> permutation;
-	permutation.push_back(1);
+	permutation.push_back(1);	// first row will remain the same, this will map row 1 to row 1
 	int i = 0;
 	while (fin >> value) 
 	{
@@ -423,7 +421,6 @@ vector< vector<int> > read_permutations(string filename)
 * reads in all normalized Latin squares from the normalizedLatinSquares file
 *
 * @param filename - name of the file containing the normalized Latin squares
-*
 * @return a vector of normalized Latin squares
 */
 vector<LatinSquare> read_normalized_squares(string filename) 
