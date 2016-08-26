@@ -192,20 +192,20 @@ void find_orthogonal_squares(vector<LatinSquare> reducedSquares, string filename
 		(reducedSquares.size() - (each * NUMBER_THREADS-1)) + each-1 :
 		each;
 
-	int currParam = 0;
+	int index = 0;
 	int count = 0;
 	for (vector<LatinSquare>::iterator it = reducedSquares.begin(); it != reducedSquares.end(); it++) 
 	{
 		// currParam ~ id
-		if (currParam < NUMBER_THREADS-1 && count == each)
+		if (index < NUMBER_THREADS-1 && count == each)
 		{
-			currParam++;
+			index++;
 			count = 0;
 		}
 		LatinSquare sq = *it;
-		params[currParam].mySquares.push_back(sq);
+		params[index].mySquares.push_back(sq);
 		count++;
-		params[currParam].myStart = each*currParam;
+		params[index].myStart = each*index;
 	}
 
 	for (int i = 0; i < NUMBER_THREADS; i++) 
@@ -299,17 +299,17 @@ vector<LatinSquare> generate_reduced_squares(vector< vector<int> > permutations,
 		(normalizedSquares.size() - (each * NUMBER_THREADS-1)) + each-1 :
 		each;
 
-	int currParam = 0;
+	int index = 0;
 	int count = 0;
 	for (vector<LatinSquare>::iterator it = normalizedSquares.begin(); it != normalizedSquares.end(); it++) 
 	{
-		if (currParam < NUMBER_THREADS-1 && count == each)
+		if (index < NUMBER_THREADS-1 && count == each)
 		{
-			currParam++;
+			index++;
 			count = 0;
 		}
 		LatinSquare sq = *it;
-		params[currParam].squares.push_back(sq);
+		params[index].squares.push_back(sq);
 		count++;
 	}
 
@@ -532,9 +532,9 @@ bool valid_args (int arg_count, char* args[])
 {
   	if (arg_count != 5) 
   	{
-    	cout << "Incorrect number of command line arguments." << endl;
-    	print_usage();
-    	return false;
+	    	cout << "Incorrect number of command line arguments." << endl;
+	    	print_usage();
+	    	return false;
   	}
 
   	string threadString = args[4];
