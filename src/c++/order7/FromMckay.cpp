@@ -13,7 +13,7 @@
 #include <sys/stat.h> 	// mkdir
 
 /* Custom Classes and Libraries */
-#include "LatinSquare.h" // Latin square class
+#include "../LatinSquare.h" // Latin square class
 
 int SQUARE_ORDER = 0;
 vector<LatinSquare> read_normalized_squares();
@@ -22,6 +22,18 @@ long string_to_formatted_long(string s);
 int main (int argc, char*argv[]) 
 {
 	vector<LatinSquare> squares = read_normalized_squares();
+	for (vector<LatinSquare>::iterator it = squares.begin(); it != squares.end(); it++) 
+	{
+		LatinSquare sq = *it;
+		cout << "sq: " << endl;
+		sq.Print();
+		cout << endl;
+		cout << "sq is symmetric: " << (sq.IsSymmetric() == 0 ? "false" : "true") << endl;
+		sq.Normalize();
+		cout << "Normalized sq: " << endl;
+		sq.Print();
+		cout << "sq is symmetric after normalize: " << (sq.IsSymmetric() == 0 ? "false" : "true") << endl << endl;
+	}
 	return 0;
 }
 
@@ -64,7 +76,8 @@ vector<LatinSquare> read_normalized_squares()
 			}
 			int mod = divisor * 10;
 
-			int current = j == 6 ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+			int current = j == SQUARE_ORDER ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+
 			values.push_back(current);
 		}
 
@@ -83,7 +96,7 @@ vector<LatinSquare> read_normalized_squares()
 				}
 				int mod = divisor * 10;
 
-				int current = j == 6 ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+				int current = j == SQUARE_ORDER ? ((longValue) / divisor) : ((longValue % mod) / divisor);
 				values.push_back(current);
 			}
 		}
@@ -122,6 +135,7 @@ long string_to_formatted_long(string value)
 		ss1 << dummy;
 		formattedString += ss1.str();
 	}
+
 
 	return atol(formattedString.c_str());
 }

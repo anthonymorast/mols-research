@@ -454,7 +454,7 @@ vector<LatinSquare> read_normalized_squares(string filename)
 			}
 			int mod = divisor * 10;
 
-			int current = j == 6 ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+			int current = j == SQUARE_ORDER ? ((longValue) / divisor) : ((longValue % mod) / divisor);
 			values.push_back(current);
 		}
 
@@ -473,7 +473,7 @@ vector<LatinSquare> read_normalized_squares(string filename)
 				}
 				int mod = divisor * 10;
 
-				int current = j == 6 ? ((longValue) / divisor) : ((longValue % mod) / divisor);
+				int current = j == SQUARE_ORDER ? ((longValue) / divisor) : ((longValue % mod) / divisor);
 				values.push_back(current);
 			}
 		}
