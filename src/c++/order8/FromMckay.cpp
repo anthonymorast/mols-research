@@ -26,7 +26,7 @@ int main (int argc, char*argv[])
 	{
 		LatinSquare sq = *it;
 		sq.Normalize();
-		cout << "sq is symmetric after normalize: " << (sq.IsSymmetric() == 0 ? "false" : "true")  << endl;
+		cout << "sq is symmetric after normalize: " << (sq.IsSymmetric() == 0 ? "false" : "true") << endl;
 	}
 	return 0;
 }
@@ -44,7 +44,7 @@ vector<LatinSquare> read_normalized_squares()
 	vector<LatinSquare> squares;
 
 	ifstream fin;
-	fin.open("mco7gr.txt");
+	fin.open("oa82mc.txt");
 	if (!fin.is_open() ) 
 	{
 		cout << "Unable to open normalized squares file exiting..." << endl;
