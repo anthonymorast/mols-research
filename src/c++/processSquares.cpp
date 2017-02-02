@@ -9,7 +9,7 @@
 #include "mpi.h" 	// multithreading
 #include <ctype.h> 	// isDigit - valid args
 #include <stdio.h> 	// printf
-#include <time.h> 	// program timing - clock
+#include <time.h> 	// program timing - clock !!!! switch to chrono (thread-safe I believe)
 #include <dirent.h> 	// directory operations
 #include <sys/stat.h> 	// mkdir
 
@@ -118,7 +118,7 @@ int main (int argc, char* argv[])
 
 	// float diff ((float)end - (float)start);
 	// cout << "Total run time (in seconds): " << diff/CLOCKS_PER_SEC << endl; 
-	//TODO - talk to Karlsson about thread safe timing
+	//TODO - switch timing to CHRONO
 }
 
 /*
