@@ -77,7 +77,7 @@ int main (int argc, char* argv[])
 	string permutationFile(argv[2]);
 	string outputFile(argv[3]);
 
-	fout = new std::ofstream("out.dat");
+	fout = new std::ofstream(outputFile.c_str());
 	DIR *logDir;
 	logDir = opendir("./log");
 	if (logDir == NULL)
