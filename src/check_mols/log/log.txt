@@ -1,0 +1,12 @@
+Process 11 finished processing 112 squares.
+Process 10 finished processing 112 squares.
+Process 9 finished processing 112 squares.
+Process 8 finished processing 112 squares.
+Process 7 finished processing 112 squares.
+Process 6 finished processing 112 squares.
+Process 5 finished processing 112 squares.
+Process 3 finished processing 112 squares.
+Process 4 finished processing 112 squares.
+Process 2 finished processing 112 squares.
+Process 0 finished processing 112 squares.
+Process 1 finished processing 112 squares.

@@ -27,6 +27,7 @@ class LatinSquare
     	bool IsNormalized();
     	void Print();
         string ToString();
+		int* ToArray();
 
     protected:
     	int GetElement (int row, int col);
@@ -424,7 +425,7 @@ string LatinSquare::to_string (int value)
 
 bool LatinSquare::Distinct (int rowOrCol[])
 {
-    int size = (sizeof(rowOrCol)/sizeof(*rowOrCol));
+    int size = (sizeof(int*)/sizeof(*rowOrCol));
     sort(rowOrCol, rowOrCol + size);
 
     for (int i = 0; i < size; i++)
@@ -461,4 +462,9 @@ string LatinSquare::ToString()
     }
 
     return printString;
+}
+
+int* LatinSquare::ToArray()
+{
+	return &(this->values[0]);
 }

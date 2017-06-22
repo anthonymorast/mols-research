@@ -25,6 +25,7 @@ fid = fopen('main_class1_weeded.dat');
 k = 1;
 %loop through all main class representatives in the file
 while ( ~feof(fid) )
+    display(1)
     %read in main class representative and transpose
     A = fscanf(fid, '%u', [n n]);
     A = A';
@@ -38,7 +39,7 @@ while ( ~feof(fid) )
                 D(3,(n*i) - (n-j)) = A(i,j);
             end
         end
-        
+        display(D)
         %permute rows/cols/symbols via D array in 3! ways
         perm = 1;
         fid2 = fopen ('3_perm.txt');
