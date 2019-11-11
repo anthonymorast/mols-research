@@ -7,17 +7,17 @@
 #include <vector>
 #include <algorithm>
 
-short* get_array_from_line(string line, int size) 
+short* get_array_from_line(string line, int size)
 {
 	line.erase(remove(line.begin(), line.end(), ' '), line.end());
 	short *vals = new short[size];
 	const char* linearr = line.c_str();
-	for(int i = 0; i < size; i++) 
+	for(int i = 0; i < size; i++)
 		vals[i] = linearr[i] - '0';
 	return vals;
 }
 
-void print_usage() 
+void print_usage()
 {
 	cout << "Usage:" << endl;
 	cout << "\tgenerate_sqaures <order> <iso_reps filename>" << endl;
@@ -25,7 +25,7 @@ void print_usage()
 
 int main(int argc, char* argv[])
 {
-	if (argc < 3) 
+	if (argc < 3)
 	{
 		print_usage();
 		return 0;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	string filename_3 = "3_perm.dat";
 	string filename_n = to_string(order) + "_perm.dat";
 	bool cont = true;
-	
+
 	if(!file_exists(filename_3))
 	{
 		cout << filename_3 << " does not exist. Please use the utilites to generate the file." << endl;
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 		cont = false;
 	}
 
-	if (!cont) 
+	if (!cont)
 		return 0;
 
 	ifstream isofile; isofile.open(filename_iso);
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
 	string line;
 	vector<LatinSquare> allsqs;
-	//while(getline(isofile, line)) 
+	//while(getline(isofile, line))
 	{
 		getline(isofile, line);
 		ifstream permnfile; permnfile.open(filename_n);
@@ -70,12 +70,12 @@ int main(int argc, char* argv[])
 		allsqs.push_back(isosq);
 
 //		string symline;
-//		while(getline(permnfile, symline)) 
+//		while(getline(permnfile, symline))
 //		{
 //			short *symperm = get_array_from_line(symline, order);
 //			LatinSquare newsq = isosq;
 //			newsq.sym_permutation(symperm);
-//			if(find(allsqs.begin(), allsqs.end(), newsq) == allsqs.end()) 
+//			if(find(allsqs.begin(), allsqs.end(), newsq) == allsqs.end())
 //				allsqs.push_back(newsq);
 //		}
 

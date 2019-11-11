@@ -22,8 +22,9 @@ public:
 	void set_main_class(short main_class);
 	void set_values(short* sq_values);
 	void permute_rows(short* new_rows);
+	void permute_cols(short* new_cols);
 	void rcs_permutation(short* rcs);
-	void sym_permutation(short* syms);
+	void permute_symbols(short* syms);
 
 	// square properties
 	bool is_symmetric();
@@ -50,5 +51,6 @@ private:
 	short main_class = -1;
 
 	void move_row(short curr_row, short new_row, short *new_values);
+	void move_col(short curr_col, short new_col, short *new_values);
 	InvalidSquareException invalidExcept;
 };

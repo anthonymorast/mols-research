@@ -79,17 +79,17 @@ string LatinSquare::tostring()
 	return lsstr;
 }
 
-string LatinSquare::flatstring() 
+string LatinSquare::flatstring()
 {
 	string flatstr = "";
 	if(values != NULL)
 	{
-		for(short i = 0; i < o_sq; i++) 
+		for(short i = 0; i < o_sq; i++)
 		{
 			flatstr += to_string(values[i]) + " ";
 		}
 	}
-	else 
+	else
 	{
 		flatstr = "An empty Latin square of order " + to_string(order);
 	}
@@ -101,11 +101,11 @@ void LatinSquare::print()
 	cout << tostring() << endl;
 }
 
-void LatinSquare::print_flat() 
+void LatinSquare::print_flat()
 {
 	if(values != NULL)
 	{
-		for(short i = 0; i < o_sq; i++) 
+		for(short i = 0; i < o_sq; i++)
 		{
 			cout << values[i];
 		}
@@ -157,7 +157,7 @@ bool LatinSquare::is_symmetric()
 		rows[i] = values[i];
 		cols[i] = values[((i*order) % o_sq) + j];	// hardest math here
 	}
-	
+
 	for (short i = 0; i < o_sq; i++)
 	{
 		if (rows[i] != cols[i])		// if they ever differ, not symmetric
@@ -296,6 +296,22 @@ void LatinSquare::permute_rows(short* new_rows)
 	set_values(new_values);
 }
 
+void LatinSquare::permute_cols(short *new_cols)
+{
+	if(!is_valid())
+	{
+		throw invalidExcept;
+		return;
+	}
+	short *new_values = new short[o_sq];
+	for(short i = 0; i < order; i++)
+	{
+		move_col(i, new_cols[i], new_values);
+	}
+	delete[] values;
+	set_values(new_values);
+}
+
 void LatinSquare::rcs_permutation(short* rcs)
 {
 	// I'm sorry future me, this is annoyingly complicated.
@@ -322,7 +338,7 @@ void LatinSquare::rcs_permutation(short* rcs)
 	set_values(new_vals);
 }
 
-void LatinSquare::sym_permutation(short* syms)
+void LatinSquare::permute_symbols(short* syms)
 {
 	// index syms based on current square values to get updated values
 	short* new_vals = new short[o_sq];
@@ -334,11 +350,23 @@ void LatinSquare::sym_permutation(short* syms)
 	set_values(new_vals);
 }
 
+/**
+* Sets the values in the new array at row (new_row) to the values in the current
+* array at row (curr_row).
+**/
 void LatinSquare::move_row(short curr_row, short new_row, short* new_values)
 {
 	for (short i = 0; i < order; i++)
 	{
 		new_values[new_row * order + i] = values[curr_row * order + i];
+	}
+}
+
+void LatinSquare::move_col(short curr_col, short new_col, short *new_values)
+{
+	for (short i = 0; i < order; i++)
+	{
+		new_values[i * order + curr_col] = values[i * order + new_col];
 	}
 }
 
