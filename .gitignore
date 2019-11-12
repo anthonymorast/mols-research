@@ -1,0 +1,4 @@
+utilities
+*.o
+generate_squares
+lstest*
