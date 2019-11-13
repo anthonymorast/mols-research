@@ -1,5 +1,6 @@
 #include "LatinSquare.h"
 #include "Utils.h"
+#include "GenerateSquares.h"
 
 #include <fstream>
 #include <string>

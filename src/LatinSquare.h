@@ -23,8 +23,8 @@ public:
 	void set_values(short* sq_values);
 	void permute_rows(short* new_rows);
 	void permute_cols(short* new_cols);
-	void rcs_permutation(short* rcs);
 	void permute_symbols(short* syms);
+	void rcs_permutation(short* rcs);
 
 	// square properties
 	bool is_symmetric();

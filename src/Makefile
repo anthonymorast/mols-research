@@ -1,26 +1,21 @@
-# for building
-opt = -O3
-std = -std=c++11
-flags = $(std) $(opt)
+CC=g++
+CFLAGS= -O3 --std=c++11 -I.
+DEPS= LatinSquare.h
+UTIL=utils
+GENSQ=generate_squares
+EXES=utils generate_squares
 
-# for cleaning
-util = utilities
-gen = generate_squares
-exes = $(util) $(gen)
+all: utils generate_squares
 
+obj/%.o: %.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-all: LatinSquare.o Utils.o GenerateSquares.o GenerateSquares Utils
-	
-LatinSquare.o: LatinSquare.cpp
-	g++ $(flags) -c LatinSquare.cpp
-Utils.o: Utils.cpp
-	g++ $(flags) -c Utils.cpp
-Utils:
-	g++ $(flags) LatinSquare.o Utils.o -o $(util)
-GenerateSquares.o: GenerateSquares.cpp
-	g++ $(flags) -c GenerateSquares.cpp
-GenerateSquares: LatinSquare.o GenerateSquares.o
-	g++ $(flags) LatinSquare.o GenerateSquares.o -o $(gen)
+utils: obj/Utils.o
+	$(CC) -o $(UTIL) obj/Utils.o
 
+generate_squares: obj/LatinSquare.o obj/GenerateSquares.o
+	$(CC) -o $(GENSQ) obj/LatinSquare.o obj/GenerateSquares.o 
+
+.PHONY: clean
 clean:
-	rm *.o $(exes)
+	rm obj/*.o $(EXES)
