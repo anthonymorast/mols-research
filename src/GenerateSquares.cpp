@@ -1,4 +1,4 @@
-#include "LatinSquare.h"
+#include "../LatinSquare/LatinSquare.h"
 #include "Utils.h"
 
 #include <fstream>
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 	}
 
 	// keep processing while new squares are added to allSqs
-	int numSqs;
+	long unsigned int numSqs;
   do {
 		// set numSqs to current size of the allSqs vector
 		numSqs = allSqs.size();
