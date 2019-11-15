@@ -1,4 +1,7 @@
-utilities
+utils
 *.o
-generate_squares
+*.dat
+generate_squares*
 lstest*
+build/
+obj/
