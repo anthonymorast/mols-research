@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE LatinSquareTests
 #include <boost/test/unit_test.hpp>
-#include "../LatinSquare.cpp"
-#include "../InvalidSquareException.h"
+#include "../../LatinSquare/LatinSquare.cpp"
+#include "../../LatinSquare/InvalidSquareException.h"
 
 BOOST_AUTO_TEST_CASE(EqualityTest)
 {

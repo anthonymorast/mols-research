@@ -1,5 +1,5 @@
-#include "../LatinSquare/LatinSquare.h"
-#include "Utils.h"
+#include "../../LatinSquare/LatinSquare.h"
+#include "../utils/Utils.h"
 
 #include <fstream>
 #include <string>

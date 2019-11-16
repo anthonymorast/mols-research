@@ -1,11 +1,12 @@
-#include "../LatinSquare/LatinSquare.h"
-#include "Utils.h"
+#include "../../LatinSquare/LatinSquare.h"
+#include "../utils/Utils.h"
 
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <mpi.h>
 
 /// NOTE:
 // We need to pass in checksqs here and only push back the squares if they
@@ -14,9 +15,9 @@
 // to the checksqs vector. This is a better way to determine which squares
 // haven't actually been checked yet.
 void unique_add_to_vector(LatinSquare sq,
-													vector<LatinSquare> &squares,
-												  vector<LatinSquare> &checkSqs,
-												  bool updateCheckSquares)
+		vector<LatinSquare> &squares,
+		vector<LatinSquare> &checkSqs,
+		bool updateCheckSquares)
 {
 	if(find(squares.begin(), squares.end(), sq) == squares.end())
 	{
@@ -60,11 +61,11 @@ int main(int argc, char* argv[])
 
 	// we need this for Main class equivalence (interchanging RCS) not for isotopy class equivalence
 	/*if(!file_exists(filename_3))
-	{
-		cout << filename_3 << " does not exist. Please use the utilites to generate the file." << endl;
-		cont = false;
-	}*/
-   	if (!file_exists(filename_n))
+	  {
+	  cout << filename_3 << " does not exist. Please use the utilites to generate the file." << endl;
+	  cont = false;
+	  }*/
+	if (!file_exists(filename_n))
 	{
 		cout << filename_n << " does not exist. Please use the utilites to generate the file." << endl;
 		cont = false;
@@ -95,7 +96,7 @@ int main(int argc, char* argv[])
 
 	// keep processing while new squares are added to allSqs
 	long unsigned int numSqs;
-  do {
+	do {
 		// set numSqs to current size of the allSqs vector
 		numSqs = allSqs.size();
 		vector<LatinSquare> newSquares;
@@ -127,14 +128,14 @@ int main(int argc, char* argv[])
 
 				if(!rowSq.is_valid() || !colSq.is_valid() || !symSq.is_valid())
 				{
-						cout << "ERROR!" << endl;
-						cout << "Generated invalid square while applying permutation: " << endl
-								 << endl << permline << " to the square " << endl << endl
-								 << baseSq.tostring() << endl << endl
-								 << "This created the following row, col, and sym squares, "
-								 << "respectively" << endl << endl << rowSq.tostring() << endl << endl
-								 << colSq.tostring() << endl << endl << symSq.tostring() << endl;
-						exit(0);
+					cout << "ERROR!" << endl;
+					cout << "Generated invalid square while applying permutation: " << endl
+						<< endl << permline << " to the square " << endl << endl
+						<< baseSq.tostring() << endl << endl
+						<< "This created the following row, col, and sym squares, "
+						<< "respectively" << endl << endl << rowSq.tostring() << endl << endl
+						<< colSq.tostring() << endl << endl << symSq.tostring() << endl;
+					exit(0);
 				}
 
 				// NOTE: unique only adds saved ~4GB RAM

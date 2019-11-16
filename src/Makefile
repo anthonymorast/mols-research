@@ -1,29 +1,53 @@
 CC=g++
+NVCC=nvcc
+MPICC=mpic++
+CUDAFLAGS=-O3 --std=c++11 -I.
 CFLAGS= -O3 --std=c++11 -I. -Wall
 DEPS= LatinSquare.h
-UTIL=utils
-GENSQSER=generate_squares_serial
-GENSQPTH=generate_squares_pthreads
-EXES=$(UTIL) $(GENSQSER) $(GENSQPTH)
+UTIL=utilities
+GENSER=generate_squares_serial
+GENMPI=generate_squares_mpi
+GENCUDA=generate_squares_cuda
+EXES=$(UTIL) $(GENSER) $(GENMPI) $(GENCUDA)
 
-all: utils generate_squares_serial generate_squares_pthreads
+all: $(UTIL) $(GENSER) $(GENMPI) $(GENCUDA)
 
-obj/%.o: %.cpp
+obj/ls/%.o: ../LatinSquare/%.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-obj/%.o: ../LatinSquare/%.cpp
+obj/utils/%.o: utils/%.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-utils: obj/Utils.o
-	$(CC) -o $(UTIL) obj/Utils.o
+obj/serial/%.o: serial/%.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-generate_squares_serial: obj/LatinSquare.o obj/GenerateSquaresSerial.o
-	$(CC) -o $(GENSQSER) obj/LatinSquare.o obj/GenerateSquaresSerial.o
+obj/mpi/%.o: mpi/%.cpp
+	$(MPICC) -c -o $@ $< $(CFLAGS)
 
-generate_squares_pthreads: obj/LatinSquare.o obj/GenerateSquaresPthreads.o
-		$(CC) -o $(GENSQPTH) obj/LatinSquare.o obj/GenerateSquaresPthreads.o
+obj/cuda/%.o: cuda/%.cu
+	$(NVCC) -c -o $@ $< $(CUDAFLAGS)
 
+$(UTIL): obj/utils/Utils.o
+	$(CC) -o $(UTIL) obj/utils/Utils.o
+
+$(GENSER): obj/ls/LatinSquare.o obj/serial/GenerateSquares.o
+	$(CC) -o $(GENSER) obj/ls/LatinSquare.o obj/serial/GenerateSquares.o
+
+$(GENMPI): obj/ls/LatinSquare.o obj/mpi/GenerateSquares.o
+	$(MPICC) -o $(GENMPI) obj/ls/LatinSquare.o obj/mpi/GenerateSquares.o
+
+$(GENCUDA): obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
+	$(NVCC) -o $(GENCUDA) obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
+
+#generate_squares_mpi: obj/LatinSquare.o obj/GenerateSquaresMPI.o
+#	$(MPICC) -o $(GENSQPTH) obj/LatinSquare.o obj/GenerateSquaresMPI.o
+
+#obj/%.o: %.cu
+#	$(NVCC) -c -o $@ $< $(CFLAGS)
+
+#generate_squares_cuda: obj/LatinSquare.o obj/GenerateSquaresCuda.o
+#	$(NVCC) -o $(GENCUDA) obj/LatinSquare.o obj obj/GenerateSquaresCuda.o
 
 .PHONY: clean
 clean:
-	rm obj/*.o $(EXES)
+	rm obj/ls/*.o obj/utils/*.o obj/serial/*.o obj/mpi/*.o obj/cuda/*.o $(EXES)
