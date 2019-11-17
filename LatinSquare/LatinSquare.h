@@ -18,8 +18,8 @@ public:
 	LatinSquare(const LatinSquare& ls);			// copy constructor
 
 	// change the square
-	void set_iso_class(short iso_class);
-	void set_main_class(short main_class);
+	void set_iso_class(short iso_class) { this->iso_class = iso_class; };
+	void set_main_class(short main_class) { this->main_class = main_class; };
 	void set_values(short* sq_values);
 	void permute_rows(short* new_rows);
 	void permute_cols(short* new_cols);
@@ -38,6 +38,7 @@ public:
 	void output_values_space(ofstream& os);
 	void print_flat();
 	string flatstring();
+	short* get_values() {return values;}
 
 	// operators
 	const bool operator==(const LatinSquare &chk_sq) const;

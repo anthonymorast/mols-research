@@ -25,13 +25,13 @@ public:
 	LatinSquare(const LatinSquare& ls);			// copy constructor
 
 	// change the square
-	void set_iso_class(short iso_class);
-	void set_main_class(short main_class);
+	void set_iso_class(short iso_class) { this->iso_class = iso_class; };
+	void set_main_class(short main_class) { this->main_class = main_class; };
 	void set_values(short* sq_values);
 	void permute_rows(short* new_rows);
 	void permute_cols(short* new_cols);
-	void rcs_permutation(short* rcs);
 	void permute_symbols(short* syms);
+	void rcs_permutation(short* rcs);
 
 	// square properties
 	bool is_symmetric();
@@ -45,6 +45,7 @@ public:
 	void output_values_space(ofstream& os);
 	void print_flat();
 	string flatstring();
+	short* get_values() {return values;}
 
 	// operators
 	const bool operator==(const LatinSquare &chk_sq) const;
@@ -321,16 +322,6 @@ bool LatinSquare::is_valid()
 	return true;
 }
 
-void LatinSquare::set_iso_class(short isoclass)
-{
-	this->iso_class = isoclass;
-}
-
-void LatinSquare::set_main_class(short main_class)
-{
-	this->main_class = main_class;
-}
-
 void LatinSquare::set_values(short* sq_values)
 {
 	this->values = sq_values;
@@ -376,7 +367,7 @@ void LatinSquare::permute_cols(short *new_cols)
 
 void LatinSquare::rcs_permutation(short* rcs)
 {
-	// I'm sorry future me, this is annoyingly complicated.
+	// I'm sorry future me...
 
 	// should be able to grab the current (R, C, S) triple and
 	// index those values based on the current rcs permutation (param).

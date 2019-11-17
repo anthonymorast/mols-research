@@ -259,16 +259,6 @@ bool LatinSquare::is_valid()
 	return true;
 }
 
-void LatinSquare::set_iso_class(short isoclass)
-{
-	this->iso_class = isoclass;
-}
-
-void LatinSquare::set_main_class(short main_class)
-{
-	this->main_class = main_class;
-}
-
 void LatinSquare::set_values(short* sq_values)
 {
 	this->values = sq_values;
@@ -314,7 +304,7 @@ void LatinSquare::permute_cols(short *new_cols)
 
 void LatinSquare::rcs_permutation(short* rcs)
 {
-	// I'm sorry future me, this is annoyingly complicated.
+	// I'm sorry future me...
 
 	// should be able to grab the current (R, C, S) triple and
 	// index those values based on the current rcs permutation (param).
