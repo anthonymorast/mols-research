@@ -265,7 +265,7 @@ void LatinSquare::set_values(short* sq_values)
 	if (!is_valid())
 	{
 		cout << "WARNING: Invalid values for latin square..." << endl;
-		this->print();
+		//this->print();
 	}
 }
 
@@ -348,7 +348,7 @@ void LatinSquare::move_row(short curr_row, short new_row, short* new_values)
 {
 	for (short i = 0; i < order; i++)
 	{
-		new_values[new_row * order + i] = values[curr_row * order + i];
+		new_values[curr_row * order + i] = values[new_row * order + i];
 	}
 }
 
@@ -360,7 +360,7 @@ void LatinSquare::move_col(short curr_col, short new_col, short *new_values)
 	}
 }
 
-const bool LatinSquare::operator==(const LatinSquare &chk_sq) const
+bool LatinSquare::operator==(const LatinSquare &chk_sq) const
 {
 	if (values == NULL || chk_sq.values == NULL)	// are empty, invalid squares not equal? should we compare the sizes?
 	{
@@ -376,7 +376,7 @@ const bool LatinSquare::operator==(const LatinSquare &chk_sq) const
 	return true;
 }
 
-const bool LatinSquare::operator!=(const LatinSquare &chk_sq) const
+bool LatinSquare::operator!=(const LatinSquare &chk_sq) const
 {
 	return !(*this == chk_sq);
 }

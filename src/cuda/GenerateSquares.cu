@@ -1,26 +1,8 @@
-#include "../../LatinSquare/LatinSquare.h"
+#include "../GenerateSquares.h"
 
 #include <stdio.h>
 
-__device__ void add_one(int *num)
-{
-	num[0] += 1;
-}
-
-__global__ void add_five(int *num)
-{
-	printf("%d\n", num[0]);
-	add_one(num);
-	printf("%d\n", num[0]);
-	add_one(num);
-	printf("%d\n", num[0]);
-	add_one(num);
-	printf("%d\n", num[0]);
-	add_one(num);
-	printf("%d\n", num[0]);
-	add_one(num);
-	printf("%d\n", num[0]);
-}
+using namespace std;
 
 __device__ void permute_rows(short* new_rows, short* values, short* new_values, int order)
 {
@@ -30,7 +12,7 @@ __device__ void permute_rows(short* new_rows, short* values, short* new_values, 
 	{
 		for(short j = 0; j < order; j++)
 		{
-			new_values[new_rows[i] * order + j] = values[i * order + j];
+			new_values[i * order + j] = values[new_rows[i] * order + j];
 		}
 	}
 }
@@ -55,91 +37,188 @@ __device__ void permute_symbols(short* syms, short* values, short* new_values, i
 	}
 }
 
-__global__ void generate_squares(short* squareList, int order, short* newSquares, short* permutation)
+__global__ void generate_squares(short* squareList, int order, short* newSquares,
+	short* permutation, int maxBatchSize)
 {
-	// this actually worked, first try bb
-	short* new_col_values = (short*)malloc(sizeof(short) * order * order);
-	permute_cols(permutation, squareList, new_col_values, order);
-	for(int i = 0; i < order*order; i++)
+	int idx = threadIdx.x + blockIdx.x * blockDim.x;
+	if(idx < maxBatchSize)
 	{
-		printf("%d ", new_col_values[i]);
+		// where in the squarelist/new square list is this thread's data?
+		int myOffset = idx * 3 * order * order;
+		// where after the offset to we start storing the data in the new square list
+		int rowOffset = 0;
+		int colOffset = order*order;
+		int symOffset = 2*(order*order);
+
+		short* new_col_values = (short*)malloc(sizeof(short) * order * order);
+		short* new_row_values = (short*)malloc(sizeof(short) * order * order);
+		short* new_sym_values = (short*)malloc(sizeof(short) * order * order);
+
+		permute_cols(permutation, squareList, new_col_values, order);
+		permute_rows(permutation, squareList, new_row_values, order);
+		permute_symbols(permutation, squareList, new_sym_values, order);
+
+		for(int i = 0; i < order*order; i++)
+		{
+			newSquares[i + myOffset + rowOffset] = new_row_values[i];
+			newSquares[i + myOffset + colOffset] = new_col_values[i];
+			newSquares[i + myOffset + symOffset] = new_sym_values[i];
+		}
+
+		delete[] new_col_values;
+		delete[] new_row_values;
+		delete[] new_sym_values;
 	}
-	printf("\n");
-	// get square array index
-	// allocate three new value arrays (could probably just pass in the newSquares pointers)
-	// call permute row, col, sym
-	// store new values in newSquares
-	// done.
 }
 
-int main()
+void run_on_gpu(short* squaresToRun, int order, short* newSquares, short* perm,
+	int squareArraySize, int permArraySize, int newSquareArraySize, int squaresToCheck)
 {
-	// probably easier to always use arrays.....
-	// this seems to work for data copying.....
-	// now just need to sub square logic.....
-	// note also this worked for calling device functions....
-
-	int *num = (int*)malloc(1);
-	num[0] = 10;
-	int *devNum;
-	cudaMalloc((void**)&devNum, sizeof(int));
-	cudaMemcpy(devNum, num, sizeof(int), cudaMemcpyHostToDevice);
-	// how to set?
-	add_five<<<1, 1>>>(devNum);
-
-	// (<what to copy into>, <what we're copying from>, <what is the size>, <some global>)
-	cudaMemcpy(num, devNum, sizeof(int), cudaMemcpyDeviceToHost);
-	printf("%d\n", num[0]);
-
-	// need to flatten all of these 2d arrays into 1d arrays for cuda......
-	int maxArraySize = 1; // number of cores?
-	int order = 3;
-
-	int squareArraySize = maxArraySize * (order*order) * sizeof(short);
-	int newSquareArraySize = squareArraySize * 3;
-	int permArraySize = order * sizeof(short);
-
-	short* squares = (short*)malloc(squareArraySize);
-	short* newSquares = (short*)malloc(newSquareArraySize);
-	short* perm = (short*)malloc(permArraySize);
-
-	// for testing
-	// make a loop to actually set these things (i.e. flatter LS and put in squares array)
-	perm[0] = 1; perm[1] = 2; perm[2] = 0;
-	squares[0] = 0; squares[1] = 1; squares[2] = 2;
-	squares[3] = 1; squares[4] = 2; squares[5] = 0;
-	squares[6] = 2; squares[7] = 0; squares[8] = 1;
-	// 0, 1, 2, 1, 2, 0, 2, 0, 1
-
-	short *dev_squares;
-	short *dev_perm;
-	short *dev_new_squares;
-
+	short* dev_squares; short* dev_perm; short* dev_new_squares;
 	cudaMalloc((void**)&dev_squares, squareArraySize);
 	cudaMalloc((void**)&dev_perm, permArraySize);
 	cudaMalloc((void**)&dev_new_squares, newSquareArraySize);
 
-	cudaMemcpy(dev_squares, squares, squareArraySize, cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_squares, squaresToRun, squareArraySize, cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_perm, perm, permArraySize, cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_new_squares, newSquares, newSquareArraySize, cudaMemcpyHostToDevice);
 
-	generate_squares<<<1, 1>>>(dev_squares, order, dev_new_squares, dev_perm);
+	// how many blocks do we need if we use nThreads threads?
+	int nThreads = 256;
+	int nBlocks = (squareArraySize + nThreads - 1) / nThreads;
+	cout << nBlocks << "  " << squareArraySize << endl;
+	generate_squares<<<nBlocks, nThreads>>>(dev_squares, order, dev_new_squares, dev_perm, squaresToCheck);
 
 	cudaMemcpy(newSquares, dev_new_squares, newSquareArraySize, cudaMemcpyDeviceToHost);
+}
 
-	for(int i = 0; i < order*order*3; i++)
+void copy_to_vectors(short* newSquares, vector<LatinSquare> checkSqs,
+	vector<LatinSquare> appendToSquares, int numberSquares, int order, bool updateCheckSquares)
+{
+	int osq = order*order;
+	for(int i = 0; i < numberSquares; i++)
 	{
-		printf("%d ", newSquares[i]);
+		for(int k = 0; k < 3; k++)	// each square generates 3 new ones
+		{
+			short* values = (short*)malloc(sizeof(short)*osq);
+			for(int j = 0; j < osq; j++)
+			{
+				values[j] = newSquares[(i*3*osq) + (k*osq) + j];
+			}
+			LatinSquare sq = LatinSquare(order, values);
+			cout << sq << endl << endl;
+			unique_add_to_vector(sq, appendToSquares, checkSqs, updateCheckSquares);
+		}
 	}
-	printf("\n");
+}
 
-	// Create 1 array to hold the squares to try (ARRAY1).
-	// create 2nd array which is 3 times the size as ARRAY1.
-	// each cuda thread will take its square, apply a row, column and symbol permutation
-	// and store the 3 new squares in the new array.
-	// The CPU will then add puting the new squares where they need to be (sqares to try/squares to print)
-	// limit this, set a max size for ARRAY1 while keeping in mind ARRAY2 will be 3x the size
-	// a short should be 2 bytes so 1,000,000 size is probably too much for, say, order 10 LS
+int main(int argc, char* argv[])
+{
+	// TODO: make some things globals (e.g. order, osq) to stop passing it around
+	if (argc < 3)
+	{
+		print_usage();
+		return 0;
+	}
 
+	short order = stoi(string(argv[1]));
+	short osq = order*order;
+	string filename_iso = string(argv[2]);
+	string filename_3 = "3_perm.dat";
+	string filename_n = to_string(order) + "_perm.dat";
+	bool cont = true;
+
+	if (!file_exists(filename_n))
+	{
+		cout << filename_n << " does not exist. Please use the utilites to generate the file." << endl;
+		cont = false;
+	}
+	if(!file_exists(filename_iso))
+	{
+		cout << filename_iso << " does not exist." << endl;
+		cont = false;
+	}
+
+	if (!cont)
+		return 0;
+
+	ifstream isofile; isofile.open(filename_iso);
+	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
+
+	string line;
+	vector<LatinSquare> allSqs;
+	vector<LatinSquare> checkSqs;		// squares to permute, do not permute all squares everytime
+	while(getline(isofile, line))
+	{
+		LatinSquare isoSq(order, get_array_from_line(line, osq));
+		allSqs.push_back(isoSq);
+		checkSqs.push_back(isoSq);
+	}
+	isofile.close();
+
+	int maxBatchSize = 1000; // some random value
+	// 4352; // number of cores? (sure, although it might eat ram)
+	long unsigned int numSqs;
+	int permArraySize = order * sizeof(short);
+	do {
+		numSqs = allSqs.size();
+		vector<LatinSquare> newSqVec;
+
+		// flip inner/outer loops since we process many squares at a time for each permutations
+		ifstream permfile; permfile.open(filename_n);
+		string permline;
+		while(getline(permfile, permline))
+		{
+			short* permArr = get_array_from_line(permline, order);
+
+			while(checkSqs.size() > 0)
+			{
+				// only process up to maxBatchSize, in batches, to conserve RAM
+				int squaresToCheck = checkSqs.size() > maxBatchSize ? maxBatchSize : checkSqs.size();
+
+				int squareArraySize = squaresToCheck * osq * sizeof(short);
+				int newSquareArraySize = squareArraySize * 3;
+
+				short* squares = (short*)malloc(squareArraySize);
+				short* newSquares = (short*)malloc(newSquareArraySize);
+
+				for(int i = 0; i < squaresToCheck; i++) 	// each square
+				{
+					short* values = checkSqs.at(i).get_values();
+					for(int j = 0; j < osq; j++)
+					{
+						squares[(i*osq) + j] = values[j];
+					}
+				}
+				// remove first 'squaresToCheck' elements from the vector
+				checkSqs.erase(checkSqs.begin(), checkSqs.begin() + squaresToCheck);
+
+				run_on_gpu(squares, order, newSquares, permArr, squareArraySize,
+					permArraySize, newSquareArraySize, squaresToCheck);
+
+				// need to store newSqVec here instead so that we can only add
+				// new unique squares to the checkSqs vector
+				copy_to_vectors(newSquares, checkSqs, newSqVec, squaresToCheck, order, false);
+			}
+
+			delete[] permArr;
+		}
+
+		checkSqs.clear(); // just in case
+		for(auto it = newSqVec.begin(); it != newSqVec.end(); it++)
+		{
+			unique_add_to_vector((*it), allSqs, checkSqs, true);
+		}
+
+		permfile.close();
+		cout << "Start Count: " << numSqs << ", End Count: " << allSqs.size() << endl;
+	} while(numSqs < allSqs.size());
+
+	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
+	{
+		cout << (*it) << endl << endl;
+	}
+
+	sqfile.close();
 	return 0;
 }

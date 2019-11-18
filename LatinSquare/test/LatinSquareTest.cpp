@@ -85,6 +85,12 @@ BOOST_AUTO_TEST_CASE(PermuteRowsTest)
 	BOOST_TEST(sq == all_4);
 	BOOST_TEST((sq == lst_three) == false);
 
+	short perm[3] = {1, 2, 0};  //perm[0] = 1; perm[1] = 2; perm[2] = 0;
+	LatinSquare row3Perm = LatinSquare(3, new short[9]{0, 1, 2, 1, 2, 0, 2, 0, 1});
+	LatinSquare good3 = LatinSquare(3, new short[9]{1, 2, 0, 2, 0, 1, 0, 1, 2});
+	row3Perm.permute_rows(perm);
+	BOOST_TEST(row3Perm == good3);
+
 	LatinSquare invalid(10);
 	BOOST_CHECK_THROW(invalid.permute_rows(values), InvalidSquareException);
 }

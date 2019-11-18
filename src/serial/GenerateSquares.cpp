@@ -1,48 +1,4 @@
-#include "../../LatinSquare/LatinSquare.h"
-#include "../utils/Utils.h"
-
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-
-/// NOTE:
-// We need to pass in checksqs here and only push back the squares if they
-// are not in the allSqs array, that is, if they haven't been checked yet.
-// Otherwise, after we have enough squares all sqs are 'new' and thus added
-// to the checksqs vector. This is a better way to determine which squares
-// haven't actually been checked yet.
-void unique_add_to_vector(LatinSquare sq,
-													vector<LatinSquare> &squares,
-												  vector<LatinSquare> &checkSqs,
-												  bool updateCheckSquares)
-{
-	if(find(squares.begin(), squares.end(), sq) == squares.end())
-	{
-		squares.push_back(sq);
-		if(updateCheckSquares)
-		{
-			checkSqs.push_back(sq);
-		}
-	}
-}
-
-short* get_array_from_line(string line, int size)
-{
-	line.erase(remove(line.begin(), line.end(), ' '), line.end());
-	short *vals = new short[size];
-	const char* linearr = line.c_str();
-	for(int i = 0; i < size; i++)
-		vals[i] = linearr[i] - '0';
-	return vals;
-}
-
-void print_usage()
-{
-	cout << "Usage:" << endl;
-	cout << "\tgenerate_sqaures <order> <iso_reps filename>" << endl;
-}
+#include "../GenerateSquares.h"
 
 int main(int argc, char* argv[])
 {
@@ -92,10 +48,11 @@ int main(int argc, char* argv[])
 		allSqs.push_back(isoSq);
 		checkSqs.push_back(isoSq);
 	}
+	isofile.close();
 
 	// keep processing while new squares are added to allSqs
 	long unsigned int numSqs;
-  do {
+  	do {
 		// set numSqs to current size of the allSqs vector
 		numSqs = allSqs.size();
 		vector<LatinSquare> newSquares;
@@ -129,11 +86,11 @@ int main(int argc, char* argv[])
 				{
 						cout << "ERROR!" << endl;
 						cout << "Generated invalid square while applying permutation: " << endl
-								 << endl << permline << " to the square " << endl << endl
-								 << baseSq.tostring() << endl << endl
-								 << "This created the following row, col, and sym squares, "
-								 << "respectively" << endl << endl << rowSq.tostring() << endl << endl
-								 << colSq.tostring() << endl << endl << symSq.tostring() << endl;
+							 << endl << permline << " to the square " << endl << endl
+							 << baseSq.tostring() << endl << endl
+							 << "This created the following row, col, and sym squares, "
+							 << "respectively" << endl << endl << rowSq.tostring() << endl << endl
+							 << colSq.tostring() << endl << endl << symSq.tostring() << endl;
 						exit(0);
 				}
 
@@ -141,6 +98,8 @@ int main(int argc, char* argv[])
 				unique_add_to_vector(rowSq, newSquares, checkSqs, false);
 				unique_add_to_vector(colSq, newSquares, checkSqs, false);
 				unique_add_to_vector(symSq, newSquares, checkSqs, false);
+
+				delete[] permArr;
 			}
 			count++;
 		}
@@ -161,7 +120,6 @@ int main(int argc, char* argv[])
 	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
 		sqfile << (*it).flatstring();
 
-	isofile.close();
 	sqfile.close();
 	return 0;
 }

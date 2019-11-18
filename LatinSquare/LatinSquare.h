@@ -41,8 +41,8 @@ public:
 	short* get_values() {return values;}
 
 	// operators
-	const bool operator==(const LatinSquare &chk_sq) const;
-	const bool operator!=(const LatinSquare &chk_sq) const;
+	bool operator==(const LatinSquare &chk_sq) const;
+	bool operator!=(const LatinSquare &chk_sq) const;
 
 private:
 	short order = -1;		// technically = i due to o_sq = -1
