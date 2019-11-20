@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <time.h>
 
 /// NOTE:
 // We need to pass in checksqs here and only push back the squares if they
@@ -40,4 +41,14 @@ void print_usage()
 {
 	cout << "Usage:" << endl;
 	cout << "\tgenerate_sqaures <order> <iso_reps filename>" << endl;
+}
+
+long my_factorial(long n)
+{
+    long product = 1;
+    for(int i = 2; i <= n; i++)
+    {
+        product *= i;
+    }
+    return product;
 }

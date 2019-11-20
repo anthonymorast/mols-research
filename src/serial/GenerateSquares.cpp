@@ -50,6 +50,11 @@ int main(int argc, char* argv[])
 	}
 	isofile.close();
 
+	long totalPerms = my_factorial(order);
+
+	time_t start, end;
+	start = clock();
+
 	// keep processing while new squares are added to allSqs
 	long unsigned int numSqs;
   	do {
@@ -99,6 +104,7 @@ int main(int argc, char* argv[])
 				unique_add_to_vector(colSq, newSquares, checkSqs, false);
 				unique_add_to_vector(symSq, newSquares, checkSqs, false);
 
+
 				delete[] permArr;
 			}
 			count++;
@@ -115,6 +121,11 @@ int main(int argc, char* argv[])
 		// is the same as it was at the start (i.e. until no new squares are added)
 		cout << "Start Count: " << numSqs << ", End Count: " << allSqs.size() << endl;
 	} while (numSqs < allSqs.size());
+
+
+	end = clock();
+	double timeTaken = double(end-start) / double(CLOCKS_PER_SEC);
+	cout << "SERIAL Time Taken: " << timeTaken << " seconds" << endl;
 
 	// write all squares to a file
 	for(auto it = allSqs.begin(); it != allSqs.end(); it++)

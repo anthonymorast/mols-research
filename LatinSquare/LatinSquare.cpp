@@ -23,7 +23,6 @@ LatinSquare::LatinSquare(short order, short* values, short iso_class)
 	this->order = order;
 	this->o_sq = order * order;
 	this->values = values;
-	cout << this->values << endl;
 	if (values != NULL)
 	{
 		set_values(values);		// if initialized with actual values, verify they are valid
@@ -36,7 +35,6 @@ LatinSquare::LatinSquare(short order, short* values, short iso_class, short main
 	this->order = order;
 	this->o_sq = order * order;
 	this->values = values;
-	cout << this->values << endl;
 	if (values != NULL)
 	{
 		set_values(values);		// if initialized with actual values, verify they are valid
