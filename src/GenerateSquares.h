@@ -7,6 +7,8 @@
 #include <vector>
 #include <algorithm>
 #include <time.h>
+#include <unordered_map>
+#include <unordered_set>
 
 /// NOTE:
 // We need to pass in checksqs here and only push back the squares if they
@@ -14,18 +16,21 @@
 // Otherwise, after we have enough squares all sqs are 'new' and thus added
 // to the checksqs vector. This is a better way to determine which squares
 // haven't actually been checked yet.
-void unique_add_to_vector(LatinSquare sq, vector<LatinSquare> &squares,
-    vector<LatinSquare> &checkSqs, bool updateCheckSquares)
-{
-	if(find(squares.begin(), squares.end(), sq) == squares.end())
-	{
-		squares.push_back(sq);
-		if(updateCheckSquares)
-		{
-			checkSqs.push_back(sq);
-		}
-	}
-}
+//
+//  THIS was REALLY slow. Replaced with unordered_maps
+//
+// void unique_add_to_vector(LatinSquare sq, vector<LatinSquare> &squares,
+//     vector<LatinSquare> &checkSqs, bool updateCheckSquares)
+// {
+// 	if(find(squares.begin(), squares.end(), sq) == squares.end())
+// 	{
+// 		squares.push_back(sq);
+// 		if(updateCheckSquares)
+// 		{
+// 			checkSqs.push_back(sq);
+// 		}
+// 	}
+// }
 
 short* get_array_from_line(string line, int size)
 {

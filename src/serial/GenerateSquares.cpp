@@ -38,19 +38,26 @@ int main(int argc, char* argv[])
 	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
 
 	string line;
-	vector<LatinSquare> allSqs;
+	unordered_set<string> allSqs;
 	vector<LatinSquare> checkSqs;		// squares to permute, do not permute all squares everytime
 	while(getline(isofile, line))
 	{
 		// get the party started by loading the squares vector with the isotopy
 		// class representatives
 		LatinSquare isoSq(order, get_array_from_line(line, order*order));
-		allSqs.push_back(isoSq);
+		allSqs.insert(isoSq.flatstring_no_space());
 		checkSqs.push_back(isoSq);
 	}
 	isofile.close();
 
-	long totalPerms = my_factorial(order);
+	vector<short*> permVec;
+	ifstream permfile; permfile.open(filename_n);
+	string permline;
+	while(getline(permfile, permline))
+	{
+		permVec.push_back(get_array_from_line(permline, order));
+	}
+	permfile.close();
 
 	time_t start, end;
 	start = clock();
@@ -60,25 +67,23 @@ int main(int argc, char* argv[])
   	do {
 		// set numSqs to current size of the allSqs vector
 		numSqs = allSqs.size();
-		vector<LatinSquare> newSquares;
+		unordered_set<string> newSquares;
 		int sqsToCheck = checkSqs.size();
 		int count = 0;
 
 		// for each square to be permuted
 		for(auto it = checkSqs.begin(); it != checkSqs.end(); it++)
 		{
-			if(count > 0 && count % 250 == 0)
+			if(count > 0 && count % 24000 == 0)
 			{
 				cout << "Checking square " << count << " of " << sqsToCheck << endl;
 			}
 
-			ifstream permnfile; permnfile.open(filename_n);
-			string permline;
 			// perform all permutations of row, col, sym
-			while(getline(permnfile, permline))
+			for(auto permIt = permVec.begin(); permIt != permVec.end(); permIt++)
 			{
 				LatinSquare baseSq = (*it);
-				short* permArr = get_array_from_line(permline, order);
+				short* permArr = (*permIt);
 				LatinSquare rowSq = baseSq;
 				LatinSquare colSq = baseSq;
 				LatinSquare symSq = baseSq;
@@ -99,23 +104,27 @@ int main(int argc, char* argv[])
 						exit(0);
 				}
 
-				// NOTE: unique only adds saved ~4GB RAM
-				unique_add_to_vector(rowSq, newSquares, checkSqs, false);
-				unique_add_to_vector(colSq, newSquares, checkSqs, false);
-				unique_add_to_vector(symSq, newSquares, checkSqs, false);
-
-
-				delete[] permArr;
+				newSquares.insert(rowSq.flatstring_no_space());
+				newSquares.insert(colSq.flatstring_no_space());
+				newSquares.insert(symSq.flatstring_no_space());
 			}
 			count++;
 		}
 
 		// these squares were checked so delete
 		checkSqs.clear();
+		pair<unordered_set<string>::iterator, bool> returnValue;
 		for(auto it = newSquares.begin(); it != newSquares.end(); it++)
 		{
-			unique_add_to_vector((*it), allSqs, checkSqs, true);
+			string lsString = (*it);
+			returnValue = allSqs.insert(lsString);
+			if(returnValue.second)
+			{
+				LatinSquare ls = LatinSquare(order, get_array_from_line(lsString, order*order));
+				checkSqs.push_back(ls);
+			}
 		}
+		newSquares.clear();
 
 		// process until the number of squares at the end of the while loop
 		// is the same as it was at the start (i.e. until no new squares are added)
@@ -129,7 +138,7 @@ int main(int argc, char* argv[])
 
 	// write all squares to a file
 	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
-		sqfile << (*it).flatstring();
+		sqfile << (*it);
 
 	sqfile.close();
 	return 0;

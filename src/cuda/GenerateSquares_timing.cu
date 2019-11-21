@@ -92,8 +92,9 @@ void run_on_gpu(short* squaresToRun, int order, short* newSquares, short* perm,
 	cudaMemcpy(newSquares, dev_new_squares, newSquareArraySize, cudaMemcpyDeviceToHost);
 }
 
-void copy_to_vectors(short* newSquares,unordered_set<string> &appendToSquares,
-	int numberSquares, int order, int totalPerms)
+void copy_to_vectors(short* newSquares, vector<LatinSquare> &checkSqs,
+	vector<LatinSquare> &appendToSquares, int numberSquares, int order, bool updateCheckSquares,
+	int totalPerms)
 {
 	int osq = order*order;
 	long iterRange =  numberSquares*totalPerms*3*osq;
@@ -106,14 +107,7 @@ void copy_to_vectors(short* newSquares,unordered_set<string> &appendToSquares,
 			if(i > 0)
 			{
 				LatinSquare sq = LatinSquare(order, values);
-				// we only really need to care about the normalized squares
-				// https://math.stackexchange.com/questions/649548/find-three-10-times10-orthogonal-latin-squares
-				// NOTE: the first squre can be normalized, the other squares in the set of MOLS can only have
-				// 	the first row as 1, 2, 3, ..., n the other 3 rows must be scrambled.
-				// 	However, we can still just store the normailzed LS and then permute the last three rows
-				//	once we have all normalized squares.
-				sq.normalize();
-				appendToSquares.insert(sq.flatstring_no_space());
+				unique_add_to_vector(sq, appendToSquares, checkSqs, updateCheckSquares);
 			}
 			valuesIdx = 0;
 			values = (short*)malloc(sizeof(short)*osq);
@@ -125,6 +119,7 @@ void copy_to_vectors(short* newSquares,unordered_set<string> &appendToSquares,
 
 int main(int argc, char* argv[])
 {
+
 	// timers
 	clock_t start, end;
 	start = clock();
@@ -157,19 +152,23 @@ int main(int argc, char* argv[])
 	if (!cont)
 		return 0;
 
+	end = clock();
+	double paramTime = double(end-start) / double(CLOCKS_PER_SEC);
+	cout << "CUDA Param Time Taken: " << paramTime << " seconds" << endl;
+
+	start = clock();
+
 	ifstream isofile; isofile.open(filename_iso);
 	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
 
 	string line;
-	// unordered_map<string, LatinSquare> allSqs;
-	unordered_set<string> allSqs;
-	vector<short*> checkSqs;		// squares to permute, do not permute all squares everytime
+	vector<LatinSquare> allSqs;
+	vector<LatinSquare> checkSqs;		// squares to permute, do not permute all squares everytime
 	while(getline(isofile, line))
 	{
 		LatinSquare isoSq(order, get_array_from_line(line, osq));
-		// allSqs.insert(make_pair(isoSq.flatstring_no_space(), isoSq));
-		allSqs.insert(isoSq.flatstring_no_space());
-		checkSqs.push_back(isoSq.get_values());
+		allSqs.push_back(isoSq);
+		checkSqs.push_back(isoSq);
 	}
 	isofile.close();
 
@@ -191,7 +190,10 @@ int main(int argc, char* argv[])
 	}
 	permfile.close();
 
-	start = clock();
+	end = clock();
+	double fileTime = double(end-start) / double(CLOCKS_PER_SEC);
+	cout << "CUDA FILE Read Time Taken: " << fileTime << " seconds" << endl;
+
 	// some random value (maybe keep it divisible by nThreads which should be a multiple of 32)
 	int maxBatchSize = 2048;
 	// 4352; // number of cores? (sure, although it might eat ram)
@@ -201,14 +203,14 @@ int main(int argc, char* argv[])
 	short* dev_squares; short* dev_perm; short* dev_new_squares;
 	do {
 		numSqs = allSqs.size();
-		unordered_set<string> newSqMap;
+		vector<LatinSquare> newSqVec;
 
 		// TODO: add a permutation batch
 		int checkedSquares = 0;
 
 		while(checkedSquares < checkSqs.size())
 		{
-			if(checkedSquares % (maxBatchSize) == 0 && checkedSquares > 0)
+			if(checkedSquares % (maxBatchSize * 3) == 0 && checkedSquares > 0)
 			{
 				printf("Checked %d out of %ld squares\n", checkedSquares, checkSqs.size());
 			}
@@ -224,13 +226,14 @@ int main(int argc, char* argv[])
 			for(int i = 0; i < squaresToCheck; i++) 	// each square
 			{
 				// start at the last index (ignore first squares that have been checked)
-				short* values = checkSqs.at(checkedSquares + i);
+				short* values = checkSqs.at(checkedSquares + i).get_values();
 				for(int j = 0; j < osq; j++)
 				{
 					squares[(i*osq) + j] = values[j];
 				}
 			}
 
+			start = clock();
 			if(lastSquaresToCheck != squaresToCheck)
 			{
 				if(lastSquaresToCheck > 0)
@@ -243,14 +246,25 @@ int main(int argc, char* argv[])
 				cudaMalloc((void**)&dev_perm, permArraySize);
 				cudaMalloc((void**)&dev_new_squares, newSquareArraySize);
 			}
+			end = clock();
+			double cudaMallocTime = double(end-start) / double(CLOCKS_PER_SEC);
+			cout << "CUDA Malloc Time Taken: " << cudaMallocTime << " seconds" << endl;
 
+			start = clock();
 			run_on_gpu(squares, order, newSquares, perms, squareArraySize,
 				permArraySize, newSquareArraySize, squaresToCheck, totalPerms,
 				dev_squares, dev_perm, dev_new_squares);
+			end = clock();
+			double gpuRunTime = double(end-start) / double(CLOCKS_PER_SEC);
+			cout << "CUDA GPU Run Time Taken: " << gpuRunTime << " seconds" << endl;
 
-			// need to store newSqMap here instead so that we can only add
+			// need to store newSqVec here instead so that we can only add
 			// new unique squares to the checkSqs vector
-			copy_to_vectors(newSquares, newSqMap, squaresToCheck, order, totalPerms);
+			start = clock();
+			copy_to_vectors(newSquares, checkSqs, newSqVec, squaresToCheck, order, false, totalPerms);
+			end = clock();
+			double copyTime = double(end-start) / double(CLOCKS_PER_SEC);
+			cout << "CUDA Copy Time Taken: " << copyTime << " seconds" << endl;
 
 			checkedSquares += squaresToCheck;
 			lastSquaresToCheck = squaresToCheck;
@@ -259,19 +273,11 @@ int main(int argc, char* argv[])
 			delete[] newSquares;
 		}
 
-		checkSqs.clear();
-		pair<unordered_set<string>::iterator, bool> returnValue;
-		for(auto it = newSqMap.begin(); it != newSqMap.end(); it++)
+		checkSqs.clear(); // just in case
+		for(auto it = newSqVec.begin(); it != newSqVec.end(); it++)
 		{
-			string lsString = (*it);
-			returnValue = allSqs.insert(lsString);
-			if(returnValue.second)	// the LS was added to the set so add it to the checksqs vector
-			{
-				short* values = get_array_from_line(lsString, osq);
-				checkSqs.push_back(values);
-			}
+			unique_add_to_vector((*it), allSqs, checkSqs, true);
 		}
-		newSqMap.clear();
 
 		cout << "Start Count: " << numSqs << ", End Count: " << allSqs.size() << endl;
 	} while(numSqs < allSqs.size());
@@ -282,7 +288,7 @@ int main(int argc, char* argv[])
 
 	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
 	{
-		sqfile << (*it);
+		//cout << (*it) << endl << endl;
 	}
 
 	sqfile.close();

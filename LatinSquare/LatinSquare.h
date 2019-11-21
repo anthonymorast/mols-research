@@ -25,10 +25,12 @@ public:
 	void permute_cols(short* new_cols);
 	void permute_symbols(short* syms);
 	void rcs_permutation(short* rcs);
+	void normalize();
 
 	// square properties
 	bool is_symmetric();
 	bool is_orthogonal(LatinSquare sq);
+	bool is_normal();
 	bool is_valid();
 
 	// visualization
@@ -38,11 +40,15 @@ public:
 	void output_values_space(ofstream& os);
 	void print_flat();
 	string flatstring();
+	string flatstring_no_space();
 	short* get_values() {return values;}
 
 	// operators
 	bool operator==(const LatinSquare &chk_sq) const;
 	bool operator!=(const LatinSquare &chk_sq) const;
+	// implemented so we std::set can be use which requires unique data be stored
+	// this makes creating the collection of all squares MUCH faster
+	bool operator<(const LatinSquare &chk_sq) const;
 
 private:
 	short order = -1;		// technically = i due to o_sq = -1

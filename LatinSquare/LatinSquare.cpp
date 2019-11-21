@@ -94,6 +94,23 @@ string LatinSquare::flatstring()
 	return flatstr + "\n";
 }
 
+string LatinSquare::flatstring_no_space()
+{
+	string flatstr = "";
+	if(values != NULL)
+	{
+		for(short i = 0; i < o_sq; i++)
+		{
+			flatstr += to_string(values[i]);
+		}
+	}
+	else
+	{
+		flatstr = "An empty Latin square of order " + to_string(order);
+	}
+	return flatstr;
+}
+
 void LatinSquare::print()
 {
 	cout << tostring() << endl;
@@ -144,6 +161,7 @@ bool LatinSquare::is_symmetric()
 		return false;
 	}
 
+// probably doens't work
 	short* rows = new short[o_sq];
 	short* cols = new short[o_sq];
 	short j = -1;	// start at -1 to prevent i>0 check everytime in the loop
@@ -168,6 +186,30 @@ bool LatinSquare::is_symmetric()
 
 	delete[] rows;
 	delete[] cols;
+	return true;
+}
+
+bool LatinSquare::is_normal()
+{
+	short* rows = new short[order];
+	short* cols = new short[order];
+
+	for (short i = 0; i < order; i++)
+	{
+		cols[i] = values[i];
+		rows[i] = values[(i*order)];	// hardest math here
+	}
+
+	for (short i = 0; i < order; i++)
+	{
+		if (rows[i] != i || cols[i] != i)		// if they ever differ, not symmetric
+		{
+			delete[] rows;
+			delete[] cols;
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -326,6 +368,60 @@ void LatinSquare::rcs_permutation(short* rcs)
 	set_values(new_vals);
 }
 
+void LatinSquare::normalize()
+{
+	// short* new_values = new short[o_sq];
+	// // permute columns
+	// for(int i = 0; i < order; i++)
+	// {
+	// 	// permute columns
+	// 	for(int j = 0; j < order; j++)
+	// 	{
+	// 		new_values[values[i] + (j*order)] = values[i + (j*order)];
+	// 	}
+	// }
+	// permute rows
+	// for(int i = 0; i < order; i++)
+	// {
+	// 	for(int j = 0; j < order; j++)
+	// 	{
+	// 		new_values[values[i] + (j*order)] = values[i + (j*order)];
+	// 	}
+	// }
+	//
+	// delete[] values;
+	// set_values(new_values);
+	// cout << (*this) << endl << endl;
+	// int dum; cin >> dum;
+
+	short* perm = new short[order];
+	for(int i = 0; i < order; i++)
+	{
+		perm[values[i]] = i;
+	}
+	permute_cols(perm);
+
+	for(int i = 0; i < order; i++)
+	{
+		perm[values[i*order]] = i;
+	}
+	permute_rows(perm);
+
+	// short* new_vals = new short[o_sq];
+	// for(int i = 0; i < order; i++)
+	// {
+	// 	for(int j = 0; j < order; j++)
+	// 	{
+	// 		cout << "\t" << values[i] << " " << (values[i * order] * order + j) << " " << (i * order + j) << endl;
+	// 		new_vals[values[i * order] * order + j] = values[(i*order) + j];
+	// 	}
+	// }
+	//
+	// int dum; cin >> dum;
+	// delete[] values;
+	// set_values(new_vals);
+}
+
 void LatinSquare::permute_symbols(short* syms)
 {
 	// index syms based on current square values to get updated values
@@ -377,4 +473,39 @@ bool LatinSquare::operator==(const LatinSquare &chk_sq) const
 bool LatinSquare::operator!=(const LatinSquare &chk_sq) const
 {
 	return !(*this == chk_sq);
+}
+
+bool LatinSquare::operator<(const LatinSquare &chk_sq) const
+{
+	// use the string representation of the squares to determine if two squares
+	// are equal (essentially). A LS being less than another LS doesn't really
+	// make sense so this is my way around that to use std::set objects in dealing
+	// with squares.
+	string thisStr = "";
+	if(values != NULL)
+	{
+		for(short i = 0; i < o_sq; i++)
+		{
+			thisStr += to_string(values[i]);
+		}
+	}
+	else
+	{
+		thisStr = "An empty Latin square of order " + to_string(order);
+	}
+
+	string checkStr = "";
+	if(values != NULL)
+	{
+		for(short i = 0; i < o_sq; i++)
+		{
+			checkStr += to_string(chk_sq.values[i]);
+		}
+	}
+	else
+	{
+		checkStr = "An empty Latin square of order " + to_string(order);
+	}
+
+	return thisStr < checkStr;
 }

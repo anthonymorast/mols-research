@@ -156,3 +156,23 @@ BOOST_AUTO_TEST_CASE(ColumnsAndRowPermuteTest)
 {
 
 }
+
+BOOST_AUTO_TEST_CASE(NormalizeLSTest)
+{
+	LatinSquare sq(4, new short[16]{ 0, 1, 2, 3,   1, 0, 3, 2,   2, 3, 0, 1,   3, 2, 1, 0 });
+	LatinSquare normal_sq(4, new short[16]{ 0, 1, 2, 3,   1, 0, 3, 2,   2, 3, 0, 1,   3, 2, 1, 0 });
+	short values[4] = {0, 2, 1, 3};
+	sq.permute_rows(values);
+	sq.permute_cols(values);
+	sq.rcs_permutation(values);
+	short values2[4] = {2, 1, 3, 0};
+	sq.permute_cols(values2);
+	sq.permute_rows(values2);
+	// sq.rcs_permutation(values2);
+
+	sq.normalize();
+
+	BOOST_TEST(sq == normal_sq);
+
+	// TODO: many more tests
+}
