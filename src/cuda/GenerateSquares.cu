@@ -112,7 +112,7 @@ void copy_to_vectors(short* newSquares,unordered_set<string> &appendToSquares,
 				// 	the first row as 1, 2, 3, ..., n the other 3 rows must be scrambled.
 				// 	However, we can still just store the normailzed LS and then permute the last three rows
 				//	once we have all normalized squares.
-				sq.normalize();
+                //sq.normalize();
 				appendToSquares.insert(sq.flatstring_no_space());
 			}
 			valuesIdx = 0;
@@ -158,7 +158,6 @@ int main(int argc, char* argv[])
 		return 0;
 
 	ifstream isofile; isofile.open(filename_iso);
-	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
 
 	string line;
 	// unordered_map<string, LatinSquare> allSqs;
@@ -193,7 +192,7 @@ int main(int argc, char* argv[])
 
 	start = clock();
 	// some random value (maybe keep it divisible by nThreads which should be a multiple of 32)
-	int maxBatchSize = 2048;
+	int maxBatchSize = 4096;
 	// 4352; // number of cores? (sure, although it might eat ram)
 	long unsigned int numSqs;
 	int permArraySize = order * sizeof(short) * totalPerms;
@@ -280,9 +279,10 @@ int main(int argc, char* argv[])
 	double timeTaken = double(end-start) / double(CLOCKS_PER_SEC);
 	cout << "CUDA Time Taken: " << timeTaken << " seconds" << endl;
 
+	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
 	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
 	{
-		sqfile << (*it);
+		sqfile << (*it) << endl;
 	}
 
 	sqfile.close();

@@ -4,13 +4,14 @@ MPICC=mpic++
 CUDAFLAGS=-O3 --std=c++11 -I.
 CFLAGS= -O3 --std=c++11 -I. -Wall
 DEPS= LatinSquare.h
-UTIL=utilities
 GENSER=generate_squares_serial
 GENMPI=generate_squares_mpi
 GENCUDA=generate_squares_cuda
-EXES=$(UTIL) $(GENSER) $(GENMPI) $(GENCUDA)
+UTILS=utilities
+CHECKSER=check_squares_serial
+EXES=$(GENSER) $(GENMPI) $(GENCUDA) $(CHECKSER) $(UTILS)
 
-all: $(UTIL) $(GENSER) $(GENMPI) $(GENCUDA)
+all: $(GENSER) $(GENMPI) $(GENCUDA) $(CHECKSER) $(UTILS)
 
 obj/ls/%.o: ../LatinSquare/%.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -39,6 +40,12 @@ $(GENMPI): obj/ls/LatinSquare.o obj/mpi/GenerateSquares.o
 $(GENCUDA): obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
 	$(NVCC) -o $(GENCUDA) obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
 
+$(CHECKSER): obj/ls/LatinSquare.o obj/serial/CheckMOLS.o
+	$(CC) -o $(CHECKSER) obj/ls/LatinSquare.o obj/serial/CheckMOLS.o
+
+$(UTILS): obj/utils/Utils.o
+	$(CC) -o $(UTILS) obj/utils/Utils.o
+
 #generate_squares_mpi: obj/LatinSquare.o obj/GenerateSquaresMPI.o
 #	$(MPICC) -o $(GENSQPTH) obj/LatinSquare.o obj/GenerateSquaresMPI.o
 
@@ -50,4 +57,4 @@ $(GENCUDA): obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
 
 .PHONY: clean
 clean:
-	rm obj/ls/*.o obj/utils/*.o obj/serial/*.o obj/mpi/*.o obj/cuda/*.o $(EXES)
+	rm obj/ls/*.o obj/serial/*.o obj/mpi/*.o obj/cuda/*.o obj/cuda/*.o obj/utils/*.o $(EXES)

@@ -104,6 +104,8 @@ int main(int argc, char* argv[])
 						exit(0);
 				}
 
+				// TODO: take advantage of normalized square efficiencies by 
+				// not using string representations
 				newSquares.insert(rowSq.flatstring_no_space());
 				newSquares.insert(colSq.flatstring_no_space());
 				newSquares.insert(symSq.flatstring_no_space());
@@ -138,7 +140,7 @@ int main(int argc, char* argv[])
 
 	// write all squares to a file
 	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
-		sqfile << (*it);
+		sqfile << (*it) << endl;
 
 	sqfile.close();
 	return 0;

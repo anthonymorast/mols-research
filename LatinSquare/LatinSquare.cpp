@@ -370,30 +370,6 @@ void LatinSquare::rcs_permutation(short* rcs)
 
 void LatinSquare::normalize()
 {
-	// short* new_values = new short[o_sq];
-	// // permute columns
-	// for(int i = 0; i < order; i++)
-	// {
-	// 	// permute columns
-	// 	for(int j = 0; j < order; j++)
-	// 	{
-	// 		new_values[values[i] + (j*order)] = values[i + (j*order)];
-	// 	}
-	// }
-	// permute rows
-	// for(int i = 0; i < order; i++)
-	// {
-	// 	for(int j = 0; j < order; j++)
-	// 	{
-	// 		new_values[values[i] + (j*order)] = values[i + (j*order)];
-	// 	}
-	// }
-	//
-	// delete[] values;
-	// set_values(new_values);
-	// cout << (*this) << endl << endl;
-	// int dum; cin >> dum;
-
 	short* perm = new short[order];
 	for(int i = 0; i < order; i++)
 	{
@@ -406,20 +382,6 @@ void LatinSquare::normalize()
 		perm[values[i*order]] = i;
 	}
 	permute_rows(perm);
-
-	// short* new_vals = new short[o_sq];
-	// for(int i = 0; i < order; i++)
-	// {
-	// 	for(int j = 0; j < order; j++)
-	// 	{
-	// 		cout << "\t" << values[i] << " " << (values[i * order] * order + j) << " " << (i * order + j) << endl;
-	// 		new_vals[values[i * order] * order + j] = values[(i*order) + j];
-	// 	}
-	// }
-	//
-	// int dum; cin >> dum;
-	// delete[] values;
-	// set_values(new_vals);
 }
 
 void LatinSquare::permute_symbols(short* syms)
