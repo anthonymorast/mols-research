@@ -10,6 +10,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
+
+#define DEBUG_MODE
+#ifdef DEBUG_MODE
+#define Debug(x) std::cout << x;
+#else
+#define Debug(x)
+#endif
+
 short* get_array_from_line(string line, int size)
 {
 	line.erase(remove(line.begin(), line.end(), ' '), line.end());

@@ -187,50 +187,18 @@ int main(int argc, char* argv[])
 	// 4352; // number of cores? (sure, although it might eat ram)
 	long unsigned int numSqs;
 	int permArraySize = order * sizeof(short) * totalPerms;
-	int startIdx = 0;
+	int lastSquaresToCheck = 0;
 	short* dev_squares; short* dev_perm; short* dev_new_squares;
-	for(int i = 0; i < allSqs.size(); i++)
-	{
-			if((i / SQ_CHECK_REPORT) > reportCount && i > 0)
-			{
-				printf("Checked %d out of %ld squares\n", checkedSquares, checkSqs.size());
-        reportCount++;
-			}
-			// only process up to maxBatchSize, in batches, to conserve RAM
-			int squaresToCheck = (checkSqs.size() - checkedSquares) > maxBatchSize
-				? maxBatchSize : (checkSqs.size() - checkedSquares);
-			int squareArraySize = squaresToCheck * osq * sizeof(short);
-			int newSquareArraySize = squareArraySize * totalPerms * 3;
-
-			short* squares = (short*)malloc(squareArraySize);
-			short* newSquares = (short*)malloc(newSquareArraySize);
-	}
-
 	do {
 		numSqs = allSqs.size();
 		unordered_set<string> newSqMap;
 
+		// TODO: add a permutation batch
+
+
 		/* START: Process each batch of 'maxBatchSize' squares */
 		int checkedSquares = 0;
     int reportCount = 0;
-		for(checkedSquares = startIdx; i < allSqs.size(); i++)
-		{
-			if(checkedSquares / (SQ_CHECK_REPORT) > reportCount && checkedSquares > 0)
-			{
-				printf("Checked %d out of %ld squares\n", checkedSquares, checkSqs.size());
-        reportCount++;
-			}
-			// only process up to maxBatchSize, in batches, to conserve RAM
-			int squaresToCheck = (checkSqs.size() - checkedSquares) > maxBatchSize
-				? maxBatchSize : (checkSqs.size() - checkedSquares);
-			int squareArraySize = squaresToCheck * osq * sizeof(short);
-			int newSquareArraySize = squareArraySize * totalPerms * 3;
-
-			short* squares = (short*)malloc(squareArraySize);
-			short* newSquares = (short*)malloc(newSquareArraySize);
-
-		}
-
 		while(checkedSquares < checkSqs.size())
 		{
 			if(checkedSquares / (SQ_CHECK_REPORT) > reportCount && checkedSquares > 0)
@@ -280,7 +248,7 @@ int main(int argc, char* argv[])
 			// new unique squares to the checkSqs vector
 
 			cout << "BEFORE copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
-			copy_to_vectors(newSquares, allSqs, squaresToCheck, order, totalPerms);
+			copy_to_vectors(newSquares, newSqMap, squaresToCheck, order, totalPerms);
 			cout << "AFTER copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
 
 			checkedSquares += squaresToCheck;
@@ -291,21 +259,20 @@ int main(int argc, char* argv[])
 		}
 		/* END: Process each batch of 'maxBatchSize' squares */
 
-		// checkSqs.clear();
-		// pair<unordered_set<string>::iterator, bool> returnValue;
-		// for(auto it = newSqMap.begin(); it != newSqMap.end(); it++)
-		// {
-		// 	string lsString = (*it);
-		// 	returnValue = allSqs.insert(lsString);
-		// 	if(returnValue.second)	// the LS was added to the set so add it to the checksqs vector
-		// 	{
-		// 		short* values = get_array_from_line(lsString, osq);
-		// 		checkSqs.push_back(values);
-		// 	}
-		// }
-		// newSqMap.clear();
+		checkSqs.clear();
+		pair<unordered_set<string>::iterator, bool> returnValue;
+		for(auto it = newSqMap.begin(); it != newSqMap.end(); it++)
+		{
+			string lsString = (*it);
+			returnValue = allSqs.insert(lsString);
+			if(returnValue.second)	// the LS was added to the set so add it to the checksqs vector
+			{
+				short* values = get_array_from_line(lsString, osq);
+				checkSqs.push_back(values);
+			}
+		}
+		newSqMap.clear();
 
-		startIdx = numSqs;
 		cout << "Start Count: " << numSqs << ", End Count: " << allSqs.size() << endl;
 	} while(numSqs < allSqs.size());
 

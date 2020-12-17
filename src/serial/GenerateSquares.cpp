@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 		// for each square to be permuted
 		for(auto it = checkSqs.begin(); it != checkSqs.end(); it++)
 		{
-			if(count > 0 && count % 24000 == 0)
+			if(count > 0 && count % SQ_CHECK_REPORT == 0)
 			{
 				cout << "Checking square " << count << " of " << sqsToCheck << endl;
 			}
