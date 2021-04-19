@@ -9,23 +9,29 @@ GENMPI=generate_squares_mpi
 GENCUDA=generate_squares_cuda
 UTILS=utilities
 CHECKSER=check_squares_serial
+DIR_GUARD=@mkdir -p $(@D)
 EXES=$(GENSER) $(GENMPI) $(GENCUDA) $(CHECKSER) $(UTILS)
 
 all: $(GENSER) $(GENMPI) $(GENCUDA) $(CHECKSER) $(UTILS)
 
 obj/ls/%.o: ../LatinSquare/%.cpp
+	$(DIR_GUARD)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 obj/utils/%.o: utils/%.cpp
+	$(DIR_GUARD)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 obj/serial/%.o: serial/%.cpp
+	$(DIR_GUARD)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 obj/mpi/%.o: mpi/%.cpp
+	$(DIR_GUARD)
 	$(MPICC) -c -o $@ $< $(CFLAGS)
 
 obj/cuda/%.o: cuda/%.cu
+	$(DIR_GUARD)
 	$(NVCC) -c -o $@ $< $(CUDAFLAGS)
 
 $(UTIL): obj/utils/Utils.o
