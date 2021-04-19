@@ -58,6 +58,8 @@ LatinSquare::LatinSquare(const LatinSquare& cls)
 	main_class = -1;
 }
 
+LatinSquare::~LatinSquare(){}
+
 string LatinSquare::tostring()
 {
 	string lsstr = "";
@@ -210,6 +212,8 @@ bool LatinSquare::is_normal()
 		}
 	}
 
+	delete[] rows;
+	delete[] cols;
 	return true;
 }
 
@@ -382,6 +386,18 @@ void LatinSquare::normalize()
 		perm[values[i*order]] = i;
 	}
 	permute_rows(perm);
+	delete[] perm;
+}
+
+void LatinSquare::reduce()
+{
+	short* perm = new short[order];
+	for(int i = 0; i < order; i++)
+	{
+		perm[values[i]] = i;
+	}
+	permute_cols(perm);
+	delete[] perm;
 }
 
 void LatinSquare::permute_symbols(short* syms)

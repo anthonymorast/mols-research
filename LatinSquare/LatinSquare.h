@@ -16,6 +16,7 @@ public:
 	LatinSquare(short order, short* values, short iso_class);
 	LatinSquare(short order, short* values, short iso_class, short main_class);
 	LatinSquare(const LatinSquare& ls);			// copy constructor
+	~LatinSquare();
 
 	// change the square
 	void set_iso_class(short iso_class) { this->iso_class = iso_class; };
@@ -26,6 +27,7 @@ public:
 	void permute_symbols(short* syms);
 	void rcs_permutation(short* rcs);
 	void normalize();
+	void reduce();
 
 	// square properties
 	bool is_symmetric();
@@ -51,7 +53,7 @@ public:
 	bool operator<(const LatinSquare &chk_sq) const;
 
 private:
-	short order = -1;		// technically = i due to o_sq = -1
+	short order = -1;		// technically = i due to o_sq (order squared) = -1
 	short* values = NULL;
 	short iso_class = -1;
 	short o_sq = -1;
