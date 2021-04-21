@@ -1,8 +1,8 @@
 CC=g++
 NVCC=nvcc
 MPICC=mpic++
-CUDAFLAGS=-O3 --std=c++11 -I.
-CFLAGS= -O3 --std=c++11 -I. -Wall
+CUDAFLAGS=-O3 --std=c++11 -I. -lpthread
+CFLAGS= -O3 --std=c++11 -I. -Wall -lpthread
 DEPS= LatinSquare.h
 GENSER=generate_squares_serial
 GENMPI=generate_squares_mpi
@@ -16,11 +16,11 @@ all: $(GENSER) $(GENMPI) $(GENCUDA) $(CHECKSER) $(UTILS)
 
 obj/ls/%.o: ../LatinSquare/%.cpp
 	$(DIR_GUARD)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $< 
 
 obj/utils/%.o: utils/%.cpp
 	$(DIR_GUARD)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 obj/serial/%.o: serial/%.cpp
 	$(DIR_GUARD)
@@ -37,13 +37,13 @@ obj/cuda/%.o: cuda/%.cu
 $(UTIL): obj/utils/Utils.o
 	$(CC) -o $(UTIL) obj/utils/Utils.o
 
-$(GENSER): obj/ls/LatinSquare.o obj/serial/GenerateSquares.o
+$(GENSER): obj/ls/LatinSquare.o obj/serial/GenerateSquares.o obj/utils/FileHandler.o
 	$(CC) -o $(GENSER) obj/ls/LatinSquare.o obj/serial/GenerateSquares.o
 
-$(GENMPI): obj/ls/LatinSquare.o obj/mpi/GenerateSquares.o
+$(GENMPI): obj/ls/LatinSquare.o obj/mpi/GenerateSquares.o obj/utils/FileHandler.o
 	$(MPICC) -o $(GENMPI) obj/ls/LatinSquare.o obj/mpi/GenerateSquares.o
 
-$(GENCUDA): obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
+$(GENCUDA): obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o obj/utils/FileHandler.o
 	$(NVCC) -o $(GENCUDA) obj/ls/LatinSquare.o obj/cuda/GenerateSquares.o
 
 $(CHECKSER): obj/ls/LatinSquare.o obj/serial/CheckMOLS.o

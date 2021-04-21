@@ -106,6 +106,8 @@ int main(int argc, char* argv[])
 
 				// TODO: take advantage of normalized square efficiencies by 
 				// not using string representations
+                rowSq.reduce(); colSq.reduce(); symSq.reduce();
+
 				newSquares.insert(rowSq.flatstring_no_space());
 				newSquares.insert(colSq.flatstring_no_space());
 				newSquares.insert(symSq.flatstring_no_space());
