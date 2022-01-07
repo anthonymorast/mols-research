@@ -4,6 +4,17 @@
 
 using namespace std;
 
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess)
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
+
+
 __device__ void permute_rows(short* new_rows, short* values, short* newSquares,
         int order, int rowOffset, int myOffset)
 {
@@ -83,13 +94,17 @@ void run_on_gpu(short* squaresToRun, int order, short* newSquares, short* perm,
     cudaMemcpy(dev_squares, squaresToRun, squareArraySize, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_perm, perm, permArraySize, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_new_squares, newSquares, newSquareArraySize, cudaMemcpyHostToDevice);
-
+    
     // how many blocks do we need if we use nThreads threads?
     int nThreads = 128;
     int nBlocks = (squareArraySize + nThreads - 1) / nThreads;
     generate_squares<<<nBlocks, nThreads>>>(dev_squares, order, dev_new_squares, dev_perm, squaresToCheck, totalPerms);
 
     cudaMemcpy(newSquares, dev_new_squares, newSquareArraySize, cudaMemcpyDeviceToHost);
+    //gpuErrchk(cudaPeekAtLastError());
+    //gpuErrchk(cudaMemcpy(newSquares, dev_new_squares, newSquareArraySize, cudaMemcpyDeviceToHost));
+    //gpuErrchk(cudaPeekAtLastError());
+    //gpuErrchk(cudaDeviceSynchronize());
 }
 
 void copy_to_vectors(short* newSquares, unordered_set<string> &appendToSquares,
@@ -99,7 +114,6 @@ void copy_to_vectors(short* newSquares, unordered_set<string> &appendToSquares,
     long iterRange =  numberSquares*totalPerms*3*osq;
     for(long i = 0; i < iterRange; i+=osq)
     {
-
         //TODO: create has function for matrices; store hash rather than squares
         //TODO: can then compare hash values to see if a square has been generated
         //TODO: squares can then be written to a file on a separate thread 
@@ -158,7 +172,7 @@ int main(int argc, char* argv[])
 
     string line;
     // unordered_map<string, LatinSquare> allSqs;
-    unordered_set<string> allSqs;
+    unordered_set<string> allSqs;      // TODO: hash function to take this from strings -> doubles
     vector<short*> checkSqs;		// squares to permute, do not permute all squares everytime
     while(getline(isofile, line))
     {
@@ -202,7 +216,6 @@ int main(int argc, char* argv[])
 
         // TODO: add a permutation batch
         // TODO: permute one isotopy class representative at a time -> write to file -> permute next iso rep (this generates all squares in iso class)
-
 
         /* START: Process each batch of 'maxBatchSize' squares */
         int checkedSquares = 0;
@@ -254,7 +267,6 @@ int main(int argc, char* argv[])
 
             // need to store newSqMap here instead so that we can only add
             // new unique squares to the checkSqs vector
-
             cout << "BEFORE copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
             copy_to_vectors(newSquares, newSqMap, squaresToCheck, order, totalPerms);
             cout << "AFTER copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
