@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 		return 0;
 
 	ifstream isofile; isofile.open(filename_iso);
-	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
+	ofstream sqfile; sqfile.open("squares/" + to_string(order) + "_squares.dat");
 
 	string line;
 	unordered_set<string> allSqs;
