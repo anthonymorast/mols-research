@@ -30,3 +30,32 @@ Processed 1100000 out of 1128961.
 All Distinct? True
 Max: 97.8875555466013            
 Time Taken: 24675.832305 sec/411.263872 min
+
+
+########################### MULTIPROCESSING RESULTS
+amorast@navier:~/Documents/mols-research/src/utils$ python3 number_check.py 5 ../squares/5_squares.dat 
+Determining square values.
+Aggregating results.
+# Distinct Totals: 161280
+# Squares: 161280
+All Distinct? True
+Max: 63.576836906578194            
+Time Taken: 3.753718 sec/0.062562 min
+
+amorast@navier:~/Documents/mols-research/src/utils$ python3 number_check.py 6 ../squares/6_reduced.dat 
+Determining square values.
+Aggregating results.
+# Distinct Totals: 1128960
+# Squares: 1128960
+All Distinct? True
+Max: 97.8875555466013            
+Time Taken: 128.575302 sec/2.142922 min
+
+amorast@navier:~/Documents/mols-research/src/utils$ python3 number_check.py 4 ../squares/4_squares.dat 
+Determining square values.
+Aggregating results.
+# Distinct Totals: 576
+# Squares: 576
+All Distinct? True
+Max: 36.48612219859873            
+Time Taken: 0.129698 sec/0.002162 min
