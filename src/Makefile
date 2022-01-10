@@ -12,8 +12,13 @@ obj/utils/%.o: utils/%.cpp
 	$(DIR_GUARD)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-generate:
-	$(CC) $(CFLAGS) main.cpp -o generate
+# creates the .o file for the Latin square object
+obj/ls/%.o: ../LatinSquare/%.cpp
+	$(DIR_GUARD)
+	$(CC) $(CFLAGS) -c -o $@ $< 
+
+generate: obj/ls/LatinSquare.o
+	$(CC) $(CFLAGS) $< main.cpp -o generate 
 
 # creates the utlities executable provided the .o file
 $(UTILS): obj/utils/Utils.o

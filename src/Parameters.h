@@ -46,7 +46,7 @@ namespace LS
             void _verifyParameters();
             void _parse();
             bool _fileExists(std::string filename);
-            short* _getArrayFromLine(std::string line);
+            short* _getArrayFromLine(std::string line, int size);
 
         public:
             Parameters(int argc, char* argv[]);
@@ -63,6 +63,22 @@ namespace LS
 
         _verifyParameters();
         _parse();
+    }
+ 
+    std::vector<LatinSquare> Parameters::getIsoReps() 
+    {
+        std::ifstream isofile;
+        isofile.open(_reps_filename);
+        std::string line;
+        std::vector<LatinSquare> isoReps;
+        while(std::getline(isofile, line)) 
+        {
+            LatinSquare sq(_order, _getArrayFromLine(line, _order*_order));
+            isoReps.push_back(sq);
+        }
+        isofile.close();
+
+        return isoReps;
     }
 
     bool Parameters::_fileExists(std::string filename) 
@@ -86,12 +102,12 @@ namespace LS
             throw ParametersException("Permutation file does not exists: \"" + _permutations_filename + "\". You can use the utilities to generate it.");
     }
 
-    short* Parameters::_getArrayFromLine(std::string line) 
+    short* Parameters::_getArrayFromLine(std::string line, int size) 
     {
         line.erase(std::remove(line.begin(), line.end(), ' '), line.end()); // trim white space
-        short* vals = new short[_order*_order];
+        short* vals = new short[size];
         const char* linearr = line.c_str();
-        for(int i = 0; i < _order*_order; i++) 
+        for(int i = 0; i < size; i++) 
             vals[i] = linearr[i] - '0';
         return vals;
     }
@@ -102,7 +118,7 @@ namespace LS
         std::ifstream permfile;
         permfile.open(_permutations_filename);
         while(std::getline(permfile, line)) 
-            _n_permutations.push_back(_getArrayFromLine(line));
+            _n_permutations.push_back(_getArrayFromLine(line, _order));
         permfile.close();
     }
 }
