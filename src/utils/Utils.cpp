@@ -85,7 +85,7 @@ void print_menu()
 void permutations(short n) 
 {
 	cout << endl << "Creating permutations of 0..." << to_string(n) << endl;
-	cout << "Writing to file " << to_string(n) << "_perm.dat" << endl;
+	cout << "Writing to file permutations/" << to_string(n) << "_perm.dat" << endl;
 	if(n > 9) 
 		cout << "This may take some time..." << endl;
 	short *vals = new short[n];
@@ -95,7 +95,7 @@ void permutations(short n)
 	}
 	
 	ofstream out;
-	out.open(to_string(n) + "_perm.dat");
+	out.open("permutations/" + to_string(n) + "_perm.dat");
 	if(!out.is_open())
 	{
 		cout << "Error opening permutations file." << endl;

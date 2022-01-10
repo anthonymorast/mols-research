@@ -19,3 +19,10 @@
 -- creates a 'Generator' virtual class based on parameters
 -- -- 'Generator' is a virtual class extended by MPI, CUDA, and Serial
 -- -- -- 'SerialGenerator', 'CUDAGenerator', 'MPIGenerator'
+
+## Questions
++ how will compilation work with CUDA generator and non-CUDA everything else?
+    + can we use nvcc to compile everything?
+        + probably a bad idea
+    + can we compile the CUDA cpp files into .o's and link to them when using g++?
+        + set up a test for this, if this works it is the correct way to do it.
