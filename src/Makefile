@@ -1,8 +1,8 @@
 CC=g++
 NVCC=nvcc
 MPICC=mpic++
-CUDAFLAGS=-O3 --std=c++11 -I. -lpthread
-CFLAGS= -O3 --std=c++11 -I. -Wall -lpthread
+CUDAFLAGS=-O3 --std=c++14 -I. -lpthread
+CFLAGS= -O3 --std=c++14 -I. -Wall -lpthread
 UTILS=utilities
 
 all: generate $(UTILS)

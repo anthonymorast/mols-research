@@ -20,6 +20,7 @@
 #include <fstream>
 #include <algorithm>
 #include <iostream>
+#include <cctype>
 
 #include "../LatinSquare/LatinSquare.h"
 
@@ -28,10 +29,10 @@ namespace LS
     class ParametersException : public std::runtime_error
     {
         public:
-            ParametersException(const std::string msg) 
-                : std::runtime_error(msg) {}
+            ParametersException(const std::string msg) : std::runtime_error(msg) {}
             ~ParametersException() {}
     };
+    enum GENERATOR_TYPE { SERIAL, CUDA, MPI };
 
     class Parameters
     {
@@ -42,10 +43,12 @@ namespace LS
             std::vector<short*> _n_permutations;
             std::string _reps_filename;
             std::string _permutations_filename;
+            GENERATOR_TYPE _generator_type = SERIAL;
 
             void _verifyParameters();
             void _parse();
             bool _fileExists(std::string filename);
+            void _parseGeneratorType(std::string arg);
             short* _getArrayFromLine(std::string line, int size);
 
         public:
@@ -54,6 +57,7 @@ namespace LS
             std::vector<LatinSquare> getIsoReps();
             int getOrder() { return _order; }
             std::vector<short*> getPermutations() { return _n_permutations; }
+            GENERATOR_TYPE getGeneratorType() { return _generator_type; }
     };
 
     Parameters::Parameters(int argc, char **argv)
@@ -90,7 +94,7 @@ namespace LS
     void Parameters::_verifyParameters()
     {
         if (_argc < 3) 
-            throw ParametersException("Usage: generate_squares <order> <iso reps filename>");
+            throw ParametersException("Usage: generate_squares <order> <iso reps filename> --<generator(default): cuda,(serial),mpi>");
 
         _order = std::stoi(std::string(_argv[1]));
         _reps_filename = std::string(_argv[2]);
@@ -100,6 +104,23 @@ namespace LS
             throw ParametersException("Isotopy class representives file does not exists: \"" + _reps_filename + "\"");
         if(!_fileExists(_permutations_filename)) 
             throw ParametersException("Permutation file does not exists: \"" + _permutations_filename + "\". You can use the utilities to generate it.");
+        
+        if(_argc > 3)    // will need to expand this to be smarter if more parameters are added
+            _parseGeneratorType(_argv[_argc-1]);
+    }
+
+    void Parameters::_parseGeneratorType(std::string arg)
+    {
+        arg = arg.substr(2);    // remove --
+        std::transform(arg.begin(), arg.end(), arg.begin(), [](unsigned char c) { return std::tolower(c); });
+        
+        // skip serial check as it is the default
+        if(arg == "cuda") 
+            _generator_type = CUDA;
+        else if (arg == "mpi") 
+            _generator_type = MPI;
+        else 
+            throw ParametersException("Invalid generator type \"" + arg + "\".");
     }
 
     short* Parameters::_getArrayFromLine(std::string line, int size) 

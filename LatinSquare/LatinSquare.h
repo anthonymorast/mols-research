@@ -5,10 +5,11 @@
 #include <iostream>
 #include <fstream>
 #include "InvalidSquareException.h"
+#include "../src/PrintableObject.h"
 
 using namespace std;
 
-class LatinSquare
+class LatinSquare : public LS::PrintableObject
 {
 public:
 	LatinSquare(short order);					// kind of useless constructor
@@ -43,7 +44,8 @@ public:
 	void print_flat();
 	string flatstring();
 	string flatstring_no_space();
-	short* get_values() {return values;}
+	short* get_values() { return values; }
+	string getPrintString() { return flatstring_no_space(); }
 
 	// operators
 	bool operator==(const LatinSquare &chk_sq) const;
