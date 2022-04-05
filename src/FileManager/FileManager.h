@@ -2,9 +2,9 @@
  * @file FileManager.h
  * @author Anthony Morast (anthony.a.morast@gmail.com)
  * @brief 
- * The file manager will take care of writing the reduced squares to a file (or sequence
- * of files which will later be post-processed). Essentially, we need a queue that appends
- * a list of squares to a file if the file is currently not being written to.
+ * The file manager will take care of writing the PrintableObjects to a file (or set
+ * of files). Essentially, we need a queue that appends printable objects to a file 
+ * if the file is currently not being written to.
  *
  * @date 2022-03-29
  * 
@@ -23,8 +23,6 @@
 #include <pthread.h>
 #include <thread>
 #include <algorithm>
-
-#include <iostream>     // !! debug only
 
 #include "./PrintableObject.h"
 
