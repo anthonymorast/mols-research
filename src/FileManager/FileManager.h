@@ -22,6 +22,8 @@
 #include <chrono>
 #include <pthread.h>
 #include <thread>
+#include <algorithm>
+
 #include <iostream>     // !! debug only
 
 #include "./PrintableObject.h"
@@ -49,14 +51,14 @@ namespace FM
             void queueJob(std::string filename, JobVector job);
 
         private:        
-            std::map<std::string, bool>  _filename_to_running;                  // true if the thread is running for the filename
-            std::map<std::string, pthread_t> _filename_to_thread_handle;
+            std::map<std::string, std::shared_ptr<std::ofstream>> _filename_to_filehandle;
             std::map<std::string, std::vector<JobVector>> _filename_to_jobs;    // store jobs for each filename
+            std::vector<std::string> _filenames;
+
             pthread_t _manager_thread_handle;
             bool _append;
             int _max_stop_wait;
             
-            void _write_objects(std::string filename, const std::vector<std::string> job); // start a separate thread to write the objects
             void _manager();    // thread used to manage the queues
     };
 
@@ -72,61 +74,47 @@ namespace FM
         while(true)
         {
             // assumes all three maps have the same keys (this SHOULD be the case)
-            for(auto it = _filename_to_running.begin(); it != _filename_to_running.end(); it++) 
+            for(auto it = _filenames.begin(); it != _filenames.end(); it++) 
             {
-                std::string key = it->first;
-                bool running = it->second;
-                pthread_t threadHandle = _filename_to_thread_handle[key];
-                if(!running && threadHandle != 0L)  // job finished, stop the thread if need be
-                {
-                    pthread_cancel(threadHandle);
-                    _filename_to_thread_handle[key] = 0L;
-                }
+                std::string key = (*it);
 
-                // start the next job on its own thread
-                // std::cout << "here: " << key << std::endl;
-                if(_filename_to_jobs[key].size() != 0 && !_filename_to_running[key]) 
+                // process a job
+                if(_filename_to_jobs[key].size() > 0) 
                 {
                     // get job and create worker thread
                     auto job = _filename_to_jobs[key].back();
-                    // std::cout << "pop me " << key << " " << _filename_to_jobs[key].size() << " " << job.size() <<  std::endl;
-                    job = _filename_to_jobs[key].back();
-                    // std::cout << "create job vector: " << key << std::endl;
-                    std::vector<std::string> jobValues;
                     for(auto jobIt = job.begin(); jobIt != job.end(); jobIt++) 
-                    {
-                        // std::cout << (**jobIt).getPrintString() << std::endl;
-                        jobValues.push_back((**jobIt).getPrintString());
-                    }
-                    // std::cout << "before creating worker: " << key << std::endl;
-                    std::thread worker(&FileManager::_write_objects, this, key, jobValues);
-                    _filename_to_thread_handle[key] = worker.native_handle();
-                    worker.detach();
-                    // std::cout << "detach job: " << key << std::endl;
-
-                    // set running to true
-                    _filename_to_running[key] = true;
+                        (*_filename_to_filehandle[key]) << (*jobIt)->getPrintString() << std::endl;
                     _filename_to_jobs[key].pop_back();
-                    // std::cout << "vector hpdated: " << key << std::endl;
                 }
             }
-            std::this_thread::sleep_for(std::chrono::seconds(1));   // wait for a second and check again
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));   // wait before checking again
         }
     }
 
     void FileManager::initFile(std::string filename) 
     {
+        if(std::find(_filenames.begin(), _filenames.end(), filename) == _filenames.end())
+            _filenames.push_back(filename);
+
         if(_filename_to_jobs.find(filename) == _filename_to_jobs.end())
         {
             std::vector<JobVector> jobs;
             _filename_to_jobs.insert(std::pair<std::string, std::vector<JobVector>>(filename, jobs));
         }
 
-        if(_filename_to_running.find(filename) == _filename_to_running.end())
-            _filename_to_running.insert(std::pair<std::string, bool>(filename, false));
+        if(_filename_to_filehandle.find(filename) == _filename_to_filehandle.end())
+        {
+            std::shared_ptr<std::ofstream> fout = std::make_shared<std::ofstream>();
+            if(_append)
+                 fout->open(filename, std::fstream::out | std::fstream::app);
+             else
+                 fout->open(filename, std::fstream::out);
+            if(!fout->is_open())
+                throw FileManagerException("Unable to open file \"" + filename + "\" for writing (append=" + (_append ? "true" : "false") + ").");
 
-        if(_filename_to_thread_handle.find(filename) == _filename_to_thread_handle.end())
-            _filename_to_thread_handle.insert(std::pair<std::string, pthread_t>(filename, 0L));
+            _filename_to_filehandle.insert(std::pair<std::string, std::shared_ptr<std::ofstream>>(filename, fout));
+        }
     }
 
     void FileManager::queueJob(std::string filename, JobVector job) 
@@ -149,35 +137,12 @@ namespace FM
             // only sleep if necessary
             std::this_thread::sleep_for(std::chrono::seconds(runningCount > 0 ? 2 : 0));
         } while(runningCount > 0);
+
+        // close the files
+        for(auto it = _filename_to_filehandle.begin(); it != _filename_to_filehandle.end(); it++)
+            it->second->close();
+
         pthread_cancel(_manager_thread_handle);
-    }
-
-    void FileManager::_write_objects(std::string filename, const std::vector<std::string> job)
-    {
-        // open the file
-        std::fstream fout;
-        if(_append)
-            fout.open(filename, std::fstream::out | std::fstream::app);
-        else
-            fout.open(filename, std::fstream::out);
-
-        if(!fout.is_open())
-            throw FileManagerException("Unable to open file \"" + filename + "\" for writing (append=" + (_append ? "true" : "false") + ").");
-        
-        // write the contents
-        // std::cout << filename << " " << job.size() << std::endl;
-        for(auto it = job.begin(); it != job.end(); it++)
-        {
-            // std::cout << filename << " " << (*it) << std::endl;
-            // std::cout << (*it)->getPrintString() << std::endl;
-            fout << (*it) << std::endl;
-        }
-        fout.close();
-
-        // set flag in _filename_to_running and thread to 0
-        // std::cout << "finishing" << std::endl;
-        _filename_to_running[filename] = false;
-        _filename_to_thread_handle[filename] = 0L;
     }
 }
 
