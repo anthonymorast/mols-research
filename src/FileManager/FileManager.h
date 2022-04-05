@@ -55,7 +55,7 @@ namespace FM
 
             pthread_t _manager_thread_handle;
             bool _append;
-            int _max_stop_wait;
+            int _max_stop_wait;  // Not yet implemented
             
             void _manager();    // thread used to manage the queues
     };

@@ -1,4 +1,5 @@
-#include <vector>
+#ifndef PRINTABLE_INT
+#define PRINTABLE_INT
 
 #include "./PrintableObject.h"
 
@@ -14,3 +15,5 @@ namespace FM
             int _value;
     };
 }
+
+#endif
