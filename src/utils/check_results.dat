@@ -1,0 +1,32 @@
+amorast@navier:~/Documents/mols-research/src/utils$ python3 number_check.py 4 ../squares/4_squares.dat 
+# Distinct Totals: 576
+# Squares: 576
+All Distinct? True
+Max: 36.48612219859873            
+Time Taken: 0.025033 sec/0.000417 min
+
+amorast@navier:~/Documents/mols-research/src/utils$ python3 number_check.py 5 ../squares/5_squares.dat 
+Processed 100000 out of 161281.
+# Distinct Totals: 161280
+# Squares: 161280
+All Distinct? True
+Max: 63.576836906578194            
+Time Taken: 479.587345 sec/7.993122 min
+
+amorast@navier:~/Documents/mols-research/src/utils$ python3 number_check.py 6 ../squares/6_reduced.dat 
+Processed 100000 out of 1128961.
+Processed 200000 out of 1128961.
+Processed 300000 out of 1128961.
+Processed 400000 out of 1128961.
+Processed 500000 out of 1128961.
+Processed 600000 out of 1128961.
+Processed 700000 out of 1128961.
+Processed 800000 out of 1128961.
+Processed 900000 out of 1128961.
+Processed 1000000 out of 1128961.
+Processed 1100000 out of 1128961.
+# Distinct Totals: 1128960
+# Squares: 1128960
+All Distinct? True
+Max: 97.8875555466013            
+Time Taken: 24675.832305 sec/411.263872 min

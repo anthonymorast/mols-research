@@ -94,7 +94,7 @@ void run_on_gpu(short* squaresToRun, int order, short* newSquares, short* perm,
     cudaMemcpy(dev_squares, squaresToRun, squareArraySize, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_perm, perm, permArraySize, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_new_squares, newSquares, newSquareArraySize, cudaMemcpyHostToDevice);
-
+    
     // how many blocks do we need if we use nThreads threads?
     int nThreads = 128;
     int nBlocks = (squareArraySize + nThreads - 1) / nThreads;
@@ -105,7 +105,6 @@ void run_on_gpu(short* squaresToRun, int order, short* newSquares, short* perm,
     //gpuErrchk(cudaMemcpy(newSquares, dev_new_squares, newSquareArraySize, cudaMemcpyDeviceToHost));
     //gpuErrchk(cudaPeekAtLastError());
     //gpuErrchk(cudaDeviceSynchronize());
-
 }
 
 void copy_to_vectors(short* newSquares, unordered_set<string> &appendToSquares,
@@ -115,18 +114,18 @@ void copy_to_vectors(short* newSquares, unordered_set<string> &appendToSquares,
     long iterRange =  numberSquares*totalPerms*3*osq;
     for(long i = 0; i < iterRange; i+=osq)
     {
+        //TODO: create has function for matrices; store hash rather than squares
+        //TODO: can then compare hash values to see if a square has been generated
+        //TODO: squares can then be written to a file on a separate thread 
+        //TODO: (or multiple files to be combined at the end).
+
+        // heap or stack? should this be created and destroyed dynamically?
+        // ans: needs to be dynamic to be ablle to call normalize/reduce
         short* values = new short[osq];
         memcpy(values, &newSquares[i], osq*sizeof(short));
-        /*for(int j = 0; j < osq; j++)
-        {
-            cout << values[j] << " ";
-            if(j % order == 0 && j > 0)
-                cout << endl;
-        }*/
-
         LatinSquare sq = LatinSquare(order, values);
-        sq.reduce();
-        //sq.normalize();
+        //sq.reduce();
+        sq.normalize();
         appendToSquares.insert(sq.flatstring_no_space());
 
         // NOTES! adding only the normalized or reduced squares produces the
@@ -204,8 +203,9 @@ int main(int argc, char* argv[])
 
     start = clock();
     // some random value (maybe keep it divisible by nThreads which should be a multiple of 32)
-    int maxBatchSize = 4096;
-    // 4352; // number of cores? (sure, although it might eat ram)
+    int maxBatchSize = 768;
+    // 1050ti = 768
+    // 2080ti = 4352; // number of cores? (sure, although it might eat ram)
     long unsigned int numSqs;
     int permArraySize = order * sizeof(short) * totalPerms;
     int lastSquaresToCheck = 0;
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
         unordered_set<string> newSqMap;
 
         // TODO: add a permutation batch
-
+        // TODO: permute one isotopy class representative at a time -> write to file -> permute next iso rep (this generates all squares in iso class)
 
         /* START: Process each batch of 'maxBatchSize' squares */
         int checkedSquares = 0;
@@ -267,10 +267,9 @@ int main(int argc, char* argv[])
 
             // need to store newSqMap here instead so that we can only add
             // new unique squares to the checkSqs vector
-
-            //cout << "BEFORE copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
+            cout << "BEFORE copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
             copy_to_vectors(newSquares, newSqMap, squaresToCheck, order, totalPerms);
-            //cout << "AFTER copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
+            cout << "AFTER copy_to_vectors: " << allSqs.size() << " " << checkSqs.size() << " " << newSqMap.size() << endl;
 
             checkedSquares += squaresToCheck;
             lastSquaresToCheck = squaresToCheck;
