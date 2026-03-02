@@ -33,7 +33,7 @@ PackedSquare pack_buf(const short* buf, int o_sq)
 {
 	PackedSquare p;
 	for (int i = 0; i < o_sq; i++) {
-		int word = i / 16;           // 16 nibbles per uint64_t
+		int word = i / 16;
 		int shift = (i % 16) * 4;
 		p.w[word] |= (uint64_t)buf[i] << shift;
 	}
@@ -49,25 +49,28 @@ void unpack_buf(const PackedSquare& p, short* buf, int o_sq)
 	}
 }
 
-// Buffer-based permutation functions (no allocation, write directly into dest)
-void permute_rows_into(short order, const short* src, short* dest, const short* perm)
+// Swap-based generator functions: copy src into dest, then swap two rows/cols/symbols.
+void swap_rows(const short* src, short* dest, int o_sq, short order, short a, short b)
 {
-	for (short i = 0; i < order; i++)
-		for (short j = 0; j < order; j++)
-			dest[i * order + j] = src[perm[i] * order + j];
+	memcpy(dest, src, sizeof(short) * o_sq);
+	for (short j = 0; j < order; j++)
+		std::swap(dest[a * order + j], dest[b * order + j]);
 }
 
-void permute_cols_into(short order, const short* src, short* dest, const short* perm)
+void swap_cols(const short* src, short* dest, int o_sq, short order, short a, short b)
 {
-	for (short i = 0; i < order; i++)
-		for (short j = 0; j < order; j++)
-			dest[j * order + i] = src[j * order + perm[i]];
+	memcpy(dest, src, sizeof(short) * o_sq);
+	for (short j = 0; j < order; j++)
+		std::swap(dest[j * order + a], dest[j * order + b]);
 }
 
-void permute_symbols_into(int o_sq, const short* src, short* dest, const short* perm)
+void swap_symbols(const short* src, short* dest, int o_sq, short a, short b)
 {
-	for (int i = 0; i < o_sq; i++)
-		dest[i] = perm[src[i]];
+	for (int i = 0; i < o_sq; i++) {
+		if (src[i] == a)      dest[i] = b;
+		else if (src[i] == b) dest[i] = a;
+		else                  dest[i] = src[i];
+	}
 }
 
 void reduce_buf(short order, short* buf, short* temp)
@@ -93,23 +96,11 @@ int main(int argc, char* argv[])
 	short order = stoi(string(argv[1]));
 	int o_sq = order * order;
 	string filename_iso = string(argv[2]);
-	string filename_3 = "3_perm.dat";
-	string filename_n = to_string(order) + "_perm.dat";
 	bool cont = true;
 
-	double t_load_iso = 0, t_load_perm = 0, t_permute_phase = 0, t_write = 0;
-	double t_permute_ops = 0, t_reduce_ops = 0, t_insert_ops = 0;
+	double t_load_iso = 0, t_permute_phase = 0, t_write = 0;
+	double t_swap_ops = 0, t_reduce_ops = 0, t_insert_ops = 0;
 
-	/*if(!file_exists(filename_3))
-	{
-		cout << filename_3 << " does not exist. Please use the utilites to generate the file." << endl;
-		cont = false;
-	}*/
-   	if (!file_exists(filename_n))
-	{
-		cout << filename_n << " does not exist. Please use the utilites to generate the file." << endl;
-		cont = false;
-	}
 	if(!file_exists(filename_iso))
 	{
 		cout << filename_iso << " does not exist." << endl;
@@ -120,7 +111,7 @@ int main(int argc, char* argv[])
 		return 0;
 
 	ifstream isofile; isofile.open(filename_iso);
-	ofstream sqfile; sqfile.open("squares/" + to_string(order) + "_squares.dat");
+	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
 
 	string line;
 	unordered_set<PackedSquare, PackedHash> allSqs;
@@ -128,7 +119,6 @@ int main(int argc, char* argv[])
 
 	{
 		auto t0 = Clock::now();
-		short* tmpBuf = new short[o_sq];
 		while(getline(isofile, line))
 		{
 			short* arr = get_array_from_line(line, o_sq);
@@ -137,29 +127,13 @@ int main(int argc, char* argv[])
 			allSqs.insert(ps);
 			checkSqs.push_back(ps);
 		}
-		delete[] tmpBuf;
 		isofile.close();
 		t_load_iso = std::chrono::duration_cast<Sec>(Clock::now() - t0).count();
 	}
 
-	vector<short*> permVec;
-	{
-		auto t0 = Clock::now();
-		ifstream permfile; permfile.open(filename_n);
-		string permline;
-		while(getline(permfile, permline))
-		{
-			permVec.push_back(get_array_from_line(permline, order));
-		}
-		permfile.close();
-		t_load_perm = std::chrono::duration_cast<Sec>(Clock::now() - t0).count();
-	}
-
 	// Pre-allocate reusable buffers
 	short* baseBuf = new short[o_sq];
-	short* rowBuf = new short[o_sq];
-	short* colBuf = new short[o_sq];
-	short* symBuf = new short[o_sq];
+	short* swapBuf = new short[o_sq];
 	short* tempBuf = new short[o_sq];
 
 	size_t startIdx = 0;
@@ -176,40 +150,65 @@ int main(int argc, char* argv[])
 					cout << "Checking square " << (i - startIdx) << " of " << (endIdx - startIdx) << endl;
 				}
 
-				// Unpack base square into buffer (push_back may invalidate pointers)
 				unpack_buf(checkSqs[i], baseBuf, o_sq);
 
-				for (auto permIt = permVec.begin(); permIt != permVec.end(); permIt++)
+				// Apply (n-1) adjacent transposition generators to rows, cols, symbols
+				for (short a = 0; a < order - 1; a++)
 				{
-					short* permArr = (*permIt);
-
+					// Row swap
 					{
 						auto tp = Clock::now();
-						permute_rows_into(order, baseBuf, rowBuf, permArr);
-						permute_cols_into(order, baseBuf, colBuf, permArr);
-						permute_symbols_into(o_sq, baseBuf, symBuf, permArr);
-						t_permute_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+						swap_rows(baseBuf, swapBuf, o_sq, order, a, (short)(a + 1));
+						t_swap_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
 					}
-
 					{
 						auto tp = Clock::now();
-						reduce_buf(order, rowBuf, tempBuf);
-						reduce_buf(order, colBuf, tempBuf);
-						reduce_buf(order, symBuf, tempBuf);
+						reduce_buf(order, swapBuf, tempBuf);
 						t_reduce_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
 					}
-
 					{
 						auto tp = Clock::now();
-						PackedSquare rp = pack_buf(rowBuf, o_sq);
-						if (allSqs.insert(rp).second)
-							checkSqs.push_back(rp);
-						PackedSquare cp = pack_buf(colBuf, o_sq);
-						if (allSqs.insert(cp).second)
-							checkSqs.push_back(cp);
-						PackedSquare sp = pack_buf(symBuf, o_sq);
-						if (allSqs.insert(sp).second)
-							checkSqs.push_back(sp);
+						PackedSquare ps = pack_buf(swapBuf, o_sq);
+						if (allSqs.insert(ps).second)
+							checkSqs.push_back(ps);
+						t_insert_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+
+					// Col swap
+					{
+						auto tp = Clock::now();
+						swap_cols(baseBuf, swapBuf, o_sq, order, a, (short)(a + 1));
+						t_swap_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+					{
+						auto tp = Clock::now();
+						reduce_buf(order, swapBuf, tempBuf);
+						t_reduce_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+					{
+						auto tp = Clock::now();
+						PackedSquare ps = pack_buf(swapBuf, o_sq);
+						if (allSqs.insert(ps).second)
+							checkSqs.push_back(ps);
+						t_insert_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+
+					// Symbol swap
+					{
+						auto tp = Clock::now();
+						swap_symbols(baseBuf, swapBuf, o_sq, a, (short)(a + 1));
+						t_swap_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+					{
+						auto tp = Clock::now();
+						reduce_buf(order, swapBuf, tempBuf);
+						t_reduce_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+					{
+						auto tp = Clock::now();
+						PackedSquare ps = pack_buf(swapBuf, o_sq);
+						if (allSqs.insert(ps).second)
+							checkSqs.push_back(ps);
 						t_insert_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
 					}
 				}
@@ -221,7 +220,7 @@ int main(int argc, char* argv[])
 		cout << "Start Count: " << allSqs.size() << ", next batch from " << startIdx << endl;
 	} while (startIdx < checkSqs.size());
 
-	delete[] baseBuf; delete[] rowBuf; delete[] colBuf; delete[] symBuf; delete[] tempBuf;
+	delete[] baseBuf; delete[] swapBuf; delete[] tempBuf;
 
 	// --- Write output: unpack each packed square and print values ---
 	{
@@ -240,18 +239,18 @@ int main(int argc, char* argv[])
 	}
 
 	// Timing report
-	double total = t_load_iso + t_load_perm + t_permute_phase + t_write;
+	double total = t_load_iso + t_permute_phase + t_write;
 	cout << "\n--- Serial timing (seconds) ---\n";
 	cout << std::fixed << std::setprecision(3);
 	double pct = (total > 0) ? 1.0 / total : 0;
 	cout << "  Load isotopy reps:  " << std::setw(8) << t_load_iso  << "  (" << (100.0 * t_load_iso  * pct) << "%)\n";
-	cout << "  Load permutations:  " << std::setw(8) << t_load_perm << "  (" << (100.0 * t_load_perm * pct) << "%)\n";
-	cout << "  Permute phase (inner loop): " << std::setw(8) << t_permute_phase << "  (" << (100.0 * t_permute_phase * pct) << "%)\n";
-	cout << "    - permute row/col/sym: " << std::setw(8) << t_permute_ops << "  (" << (100.0 * t_permute_ops * pct) << "%)\n";
-	cout << "    - reduce (x3):         " << std::setw(8) << t_reduce_ops << "  (" << (100.0 * t_reduce_ops * pct) << "%)\n";
-	cout << "    - pack + insert:        " << std::setw(8) << t_insert_ops << "  (" << (100.0 * t_insert_ops * pct) << "%)\n";
+	cout << "  Generator phase:    " << std::setw(8) << t_permute_phase << "  (" << (100.0 * t_permute_phase * pct) << "%)\n";
+	cout << "    - swap row/col/sym:  " << std::setw(8) << t_swap_ops << "  (" << (100.0 * t_swap_ops * pct) << "%)\n";
+	cout << "    - reduce:            " << std::setw(8) << t_reduce_ops << "  (" << (100.0 * t_reduce_ops * pct) << "%)\n";
+	cout << "    - pack + insert:     " << std::setw(8) << t_insert_ops << "  (" << (100.0 * t_insert_ops * pct) << "%)\n";
 	cout << "  Write output:       " << std::setw(8) << t_write << "  (" << (100.0 * t_write * pct) << "%)\n";
 	cout << "  TOTAL:              " << std::setw(8) << total << "\n";
+	cout << "  Total squares:      " << allSqs.size() << "\n";
 
 	return 0;
 }
