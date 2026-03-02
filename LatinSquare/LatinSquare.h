@@ -25,6 +25,9 @@ public:
 	void permute_rows(short* new_rows);
 	void permute_cols(short* new_cols);
 	void permute_symbols(short* syms);
+	void permute_rows_from(const LatinSquare& src, short* new_rows);
+	void permute_cols_from(const LatinSquare& src, short* new_cols);
+	void permute_symbols_from(const LatinSquare& src, short* syms);
 	void rcs_permutation(short* rcs);
 	void normalize();
 	void reduce();
@@ -36,7 +39,7 @@ public:
 	bool is_valid();
 
 	// visualization
-	string tostring();
+	string tostring() const;
 	void print();
 	friend ostream& operator<<(ostream& os, const LatinSquare sq);
 	void output_values_space(ofstream& os);
@@ -58,8 +61,11 @@ private:
 	short iso_class = -1;
 	short o_sq = -1;
 	short main_class = -1;
+	short expected_sum {}; 
+	std::string stringrepr{};
 
 	void move_row(short curr_row, short new_row, short *new_values);
 	void move_col(short curr_col, short new_col, short *new_values);
+	void init(short order, short* values);
 	InvalidSquareException invalidExcept;
 };

@@ -1,56 +1,45 @@
 #include "LatinSquare.h"
 
-// delegated constructors not working with gcc/g++, even after specifying c++11
-LatinSquare::LatinSquare(short order)
+void LatinSquare::init(short order, short* values)
 {
+	// use order-1 since squares start at 0 (0 1 2 3 sum=6 vs 1 2 3 4 sum=10)
+	expected_sum = ((order - 1) * order) / 2;
 	this->order = order;
-	this->o_sq = order * order;
+	o_sq = order * order;
+	this->values = values;
+	if (values != NULL)
+		set_values(values);
+	this->stringrepr.resize(o_sq);
 }
+
+LatinSquare::LatinSquare(short order) { init(order, NULL); }
 
 LatinSquare::LatinSquare(short order, short* values)
 {
-	this->order = order;
-	this->o_sq = order * order;
-	this->values = values;
-	if (values != NULL)
-	{
-		set_values(values);		// if initialized with actual values, verify they are valid
-	}
+	init(order, values);
 }
 
 LatinSquare::LatinSquare(short order, short* values, short iso_class)
 {
-	this->order = order;
-	this->o_sq = order * order;
-	this->values = values;
-	if (values != NULL)
-	{
-		set_values(values);		// if initialized with actual values, verify they are valid
-	}
+	init(order, values);
 	this->iso_class = iso_class;
 }
 
 LatinSquare::LatinSquare(short order, short* values, short iso_class, short main_class)
 {
-	this->order = order;
-	this->o_sq = order * order;
-	this->values = values;
-	if (values != NULL)
-	{
-		set_values(values);		// if initialized with actual values, verify they are valid
-	}
+	init(order, values);
 	this->iso_class = iso_class;
 	this->main_class = main_class;
 }
 
 LatinSquare::LatinSquare(const LatinSquare& cls)
 {
+	expected_sum = cls.expected_sum;
 	order = cls.order;
 	o_sq = cls.o_sq;
 	values = NULL;
 	if (cls.values != NULL)
 	{
-		// deep copy the array
 		values = new short[o_sq];
 		memcpy(values, cls.values, sizeof(short) * o_sq);
 	}
@@ -60,7 +49,7 @@ LatinSquare::LatinSquare(const LatinSquare& cls)
 
 LatinSquare::~LatinSquare(){}
 
-string LatinSquare::tostring()
+string LatinSquare::tostring() const
 {
 	string lsstr = "";
 	if (values != NULL)
@@ -98,19 +87,34 @@ string LatinSquare::flatstring()
 
 string LatinSquare::flatstring_no_space()
 {
-	string flatstr = "";
-	if(values != NULL)
+	if(values == NULL)
 	{
-		for(short i = 0; i < o_sq; i++)
-		{
-			flatstr += to_string(values[i]);
-		}
+		return "An empty Latin square of order " + to_string(order);
+	}
+
+	// Ensure stringrepr is sized (copy constructor doesn't copy it, so it may be empty)
+	if (order <= 10)
+	{
+		if (stringrepr.size() != static_cast<size_t>(o_sq))
+			stringrepr.resize(o_sq);
 	}
 	else
 	{
-		flatstr = "An empty Latin square of order " + to_string(order);
+		stringrepr.clear();
+		stringrepr.reserve(o_sq*2); // overestimate by assuming 2-digits per value in square
 	}
-	return flatstr;
+
+	for(short i = 0; i < o_sq; i++)
+	{
+		if(order <= 10) { // can go up to 10 due to 0-based indexing
+			this->stringrepr[i] = '0' + values[i]; // more efficient if value is <= 9
+			continue;
+		}
+
+		this->stringrepr += std::to_string(values[i]);
+	}
+
+	return this->stringrepr;
 }
 
 void LatinSquare::print()
@@ -266,40 +270,34 @@ bool LatinSquare::is_valid()
 	{
 		return false;
 	}
-	// mark the row/col check matrices, each index should be marked once for each
-	// row and column for the square to be valid.
-	bool* row_chk = new bool[order];
-	bool* col_chk = new bool[order];
-	short j = -1;
-
+	
+	short row_sum {}, col_sum {}, j {};
 	for (short i = 0; i < o_sq; i++)
 	{
 		// the check arrays should be filled every time we do 'order' number of checks
 		// need to reset them to all false
-		if (i % order == 0)
+		if (i % order == 0 && i > 0)
 		{
-			memset(row_chk, 0, order * sizeof(bool));
-			memset(col_chk, 0, order * sizeof(bool));
+			if (row_sum != this->expected_sum || col_sum != this->expected_sum)
+			{
+				cout << "Row sum: " << row_sum << ", Col sum: " << col_sum << endl;
+				cout << "Expected sum: " << this->expected_sum << endl;
+				cout << "Values: ";
+				for (short k = 0; k < o_sq; k++)
+				{
+					cout << values[k] << " ";
+				}
+				cout << endl;
+				return false;
+			}
+			row_sum = 0;
+			col_sum = 0;
 			j++;
 		}
-		short row_idx = values[i] % order;
-		short col_idx = values[((i * order) % o_sq) + j] % order;
-
-		if (col_chk[col_idx] || row_chk[row_idx])	// same number twice (already marked)
-		{
-			delete[] row_chk;
-			delete[] col_chk;
-			return false;
-		}
-		else
-		{
-			col_chk[col_idx] = true;
-			row_chk[row_idx] = true;
-		}
+		row_sum += values[i];
+		col_sum += values[((i * order) % o_sq) + j];
 	}
 
-	delete[] row_chk;
-	delete[] col_chk;
 	return true;
 }
 
@@ -309,7 +307,8 @@ void LatinSquare::set_values(short* sq_values)
 	if (!is_valid())
 	{
 		cout << "WARNING: Invalid values for latin square..." << endl;
-		//this->print();
+		this->print();
+		exit(0);
 	}
 }
 
@@ -321,13 +320,16 @@ void LatinSquare::permute_rows(short* new_rows)
 		return;
 	}
 
-	short* new_values = new short[o_sq];
+	short temp_values[o_sq]; // create on stack to hold old values
+	memcpy(temp_values, values, sizeof(short) * o_sq); // copy old values
+
+	// modify values in-place rather than allocate, reset and delete
 	for (short i = 0; i < order; i++)
 	{
-		move_row(i, new_rows[i], new_values);
+		for (short j = 0; j < order; j++) {
+			values[i * order + j] = temp_values[new_rows[i] * order + j];
+		}
 	}
-	delete[] values;
-	set_values(new_values);
 }
 
 void LatinSquare::permute_cols(short *new_cols)
@@ -337,13 +339,16 @@ void LatinSquare::permute_cols(short *new_cols)
 		throw invalidExcept;
 		return;
 	}
-	short *new_values = new short[o_sq];
-	for(short i = 0; i < order; i++)
-	{
-		move_col(i, new_cols[i], new_values);
+
+	short temp_values[o_sq]; // create on stack to hold old values
+	memcpy(temp_values, values, sizeof(short) * o_sq); // copy old values
+
+	// edit in place rather than allocate, reset and delete
+	for(short i = 0; i < order; i++) {
+		for(auto j = 0; j < order; j++) { // move_cols logic inline here
+			values[j * order + i] = temp_values[j * order + new_cols[i]];
+		}
 	}
-	delete[] values;
-	set_values(new_values);
 }
 
 void LatinSquare::rcs_permutation(short* rcs)
@@ -391,25 +396,66 @@ void LatinSquare::normalize()
 
 void LatinSquare::reduce()
 {
-	short* perm = new short[order];
+	short perm[order];
 	for(int i = 0; i < order; i++)
 	{
 		perm[values[i]] = i;
 	}
 	permute_cols(perm);
-	delete[] perm;
 }
 
 void LatinSquare::permute_symbols(short* syms)
 {
 	// index syms based on current square values to get updated values
-	short* new_vals = new short[o_sq];
-	for (short i = 0; i < o_sq; i++)
-	{
-		new_vals[i] = syms[values[i]];
+	short temp_values[o_sq];
+	memcpy(temp_values, values, sizeof(short) * o_sq);
+	for (short i = 0; i < o_sq; i++) {
+		values[i] = syms[temp_values[i]];
 	}
-	delete[] values;
-	set_values(new_vals);
+}
+
+// NOTE (AM 3/1/26): These are not used but are more efficient than the ones above. To save
+// allocations, static method operating on the same data were added to the GenerateSquares class.
+
+// Duplicates permute_rows logic; writes directly from src to avoid extra copy (faster than copy+permute_rows).
+// Caller must ensure src is valid.
+void LatinSquare::permute_rows_from(const LatinSquare& src, short* new_rows)
+{
+	if (values != NULL) delete[] values;
+	order = src.order;
+	o_sq = src.o_sq;
+	expected_sum = src.expected_sum;
+	values = new short[o_sq];
+	for (short i = 0; i < order; i++)
+		for (short j = 0; j < order; j++)
+			values[i * order + j] = src.values[new_rows[i] * order + j];
+}
+
+// Duplicates permute_cols logic; writes directly from src to avoid extra copy (faster than copy+permute_cols).
+// Caller must ensure src is valid.
+void LatinSquare::permute_cols_from(const LatinSquare& src, short* new_cols)
+{
+	if (values != NULL) delete[] values;
+	order = src.order;
+	o_sq = src.o_sq;
+	expected_sum = src.expected_sum;
+	values = new short[o_sq];
+	for (short i = 0; i < order; i++)
+		for (short j = 0; j < order; j++)
+			values[j * order + i] = src.values[j * order + new_cols[i]];
+}
+
+// Duplicates permute_symbols logic; writes directly from src to avoid extra copy (faster than copy+permute_symbols).
+// Caller must ensure src is valid.
+void LatinSquare::permute_symbols_from(const LatinSquare& src, short* syms)
+{
+	if (values != NULL) delete[] values;
+	order = src.order;
+	o_sq = src.o_sq;
+	expected_sum = src.expected_sum;
+	values = new short[o_sq];
+	for (short i = 0; i < o_sq; i++)
+		values[i] = syms[src.values[i]];
 }
 
 /**

@@ -1,4 +1,86 @@
 #include "../GenerateSquares.h"
+#include <chrono>
+#include <iomanip>
+#include <cstdint>
+
+using Clock = std::chrono::steady_clock;
+using Sec = std::chrono::duration<double>;
+
+// Packed square: stores up to 100 values at 4 bits each (supports order ≤ 10).
+// 100 × 4 bits = 400 bits = 7 uint64_t (448 bits, 56 bytes).
+static const int PACK_WORDS = 7;
+
+struct PackedSquare {
+	uint64_t w[PACK_WORDS] = {};
+
+	bool operator==(const PackedSquare& o) const {
+		for (int i = 0; i < PACK_WORDS; i++)
+			if (w[i] != o.w[i]) return false;
+		return true;
+	}
+};
+
+struct PackedHash {
+	size_t operator()(const PackedSquare& p) const {
+		size_t h = 0;
+		for (int i = 0; i < PACK_WORDS; i++)
+			h ^= p.w[i] * (0x9e3779b97f4a7c15ULL + i);
+		return h;
+	}
+};
+
+PackedSquare pack_buf(const short* buf, int o_sq)
+{
+	PackedSquare p;
+	for (int i = 0; i < o_sq; i++) {
+		int word = i / 16;           // 16 nibbles per uint64_t
+		int shift = (i % 16) * 4;
+		p.w[word] |= (uint64_t)buf[i] << shift;
+	}
+	return p;
+}
+
+void unpack_buf(const PackedSquare& p, short* buf, int o_sq)
+{
+	for (int i = 0; i < o_sq; i++) {
+		int word = i / 16;
+		int shift = (i % 16) * 4;
+		buf[i] = (p.w[word] >> shift) & 0xF;
+	}
+}
+
+// Buffer-based permutation functions (no allocation, write directly into dest)
+void permute_rows_into(short order, const short* src, short* dest, const short* perm)
+{
+	for (short i = 0; i < order; i++)
+		for (short j = 0; j < order; j++)
+			dest[i * order + j] = src[perm[i] * order + j];
+}
+
+void permute_cols_into(short order, const short* src, short* dest, const short* perm)
+{
+	for (short i = 0; i < order; i++)
+		for (short j = 0; j < order; j++)
+			dest[j * order + i] = src[j * order + perm[i]];
+}
+
+void permute_symbols_into(int o_sq, const short* src, short* dest, const short* perm)
+{
+	for (int i = 0; i < o_sq; i++)
+		dest[i] = perm[src[i]];
+}
+
+void reduce_buf(short order, short* buf, short* temp)
+{
+	short perm[order];
+	for (int i = 0; i < order; i++)
+		perm[buf[i]] = i;
+	int o_sq = order * order;
+	memcpy(temp, buf, sizeof(short) * o_sq);
+	for (short i = 0; i < order; i++)
+		for (short j = 0; j < order; j++)
+			buf[j * order + i] = temp[j * order + perm[i]];
+}
 
 int main(int argc, char* argv[])
 {
@@ -9,12 +91,15 @@ int main(int argc, char* argv[])
 	}
 
 	short order = stoi(string(argv[1]));
+	int o_sq = order * order;
 	string filename_iso = string(argv[2]);
 	string filename_3 = "3_perm.dat";
 	string filename_n = to_string(order) + "_perm.dat";
 	bool cont = true;
 
-	// we need this for Main class equivalence (interchanging RCS) not for isotopy class equivalence
+	double t_load_iso = 0, t_load_perm = 0, t_permute_phase = 0, t_write = 0;
+	double t_permute_ops = 0, t_reduce_ops = 0, t_insert_ops = 0;
+
 	/*if(!file_exists(filename_3))
 	{
 		cout << filename_3 << " does not exist. Please use the utilites to generate the file." << endl;
@@ -38,112 +123,135 @@ int main(int argc, char* argv[])
 	ofstream sqfile; sqfile.open(to_string(order) + "_squares.dat");
 
 	string line;
-	unordered_set<string> allSqs;
-	vector<LatinSquare> checkSqs;		// squares to permute, do not permute all squares everytime
-	while(getline(isofile, line))
+	unordered_set<PackedSquare, PackedHash> allSqs;
+	vector<PackedSquare> checkSqs;
+
 	{
-		// get the party started by loading the squares vector with the isotopy
-		// class representatives
-		LatinSquare isoSq(order, get_array_from_line(line, order*order));
-		allSqs.insert(isoSq.flatstring_no_space());
-		checkSqs.push_back(isoSq);
+		auto t0 = Clock::now();
+		short* tmpBuf = new short[o_sq];
+		while(getline(isofile, line))
+		{
+			short* arr = get_array_from_line(line, o_sq);
+			PackedSquare ps = pack_buf(arr, o_sq);
+			delete[] arr;
+			allSqs.insert(ps);
+			checkSqs.push_back(ps);
+		}
+		delete[] tmpBuf;
+		isofile.close();
+		t_load_iso = std::chrono::duration_cast<Sec>(Clock::now() - t0).count();
 	}
-	isofile.close();
 
 	vector<short*> permVec;
-	ifstream permfile; permfile.open(filename_n);
-	string permline;
-	while(getline(permfile, permline))
 	{
-		permVec.push_back(get_array_from_line(permline, order));
-	}
-	permfile.close();
-
-	time_t start, end;
-	start = clock();
-
-	// keep processing while new squares are added to allSqs
-	long unsigned int numSqs;
-  	do {
-		// set numSqs to current size of the allSqs vector
-		numSqs = allSqs.size();
-		unordered_set<string> newSquares;
-		int sqsToCheck = checkSqs.size();
-		int count = 0;
-
-		// for each square to be permuted
-		for(auto it = checkSqs.begin(); it != checkSqs.end(); it++)
+		auto t0 = Clock::now();
+		ifstream permfile; permfile.open(filename_n);
+		string permline;
+		while(getline(permfile, permline))
 		{
-			if(count > 0 && count % SQ_CHECK_REPORT == 0)
+			permVec.push_back(get_array_from_line(permline, order));
+		}
+		permfile.close();
+		t_load_perm = std::chrono::duration_cast<Sec>(Clock::now() - t0).count();
+	}
+
+	// Pre-allocate reusable buffers
+	short* baseBuf = new short[o_sq];
+	short* rowBuf = new short[o_sq];
+	short* colBuf = new short[o_sq];
+	short* symBuf = new short[o_sq];
+	short* tempBuf = new short[o_sq];
+
+	size_t startIdx = 0;
+	do {
+		size_t endIdx = checkSqs.size();
+		cout << "checkSqs.size() = " << checkSqs.size() << ", processing [" << startIdx << ", " << endIdx << ")" << endl;
+
+		{
+			auto t0 = Clock::now();
+			for (size_t i = startIdx; i < endIdx; i++)
 			{
-				cout << "Checking square " << count << " of " << sqsToCheck << endl;
-			}
-
-			// perform all permutations of row, col, sym
-			for(auto permIt = permVec.begin(); permIt != permVec.end(); permIt++)
-			{
-				LatinSquare baseSq = (*it);
-				short* permArr = (*permIt);
-				LatinSquare rowSq = baseSq;
-				LatinSquare colSq = baseSq;
-				LatinSquare symSq = baseSq;
-
-				rowSq.permute_rows(permArr);
-				colSq.permute_cols(permArr);
-				symSq.permute_symbols(permArr);
-
-				if(!rowSq.is_valid() || !colSq.is_valid() || !symSq.is_valid())
+				if (i > startIdx && (i - startIdx) % SQ_CHECK_REPORT == 0)
 				{
-						cout << "ERROR!" << endl;
-						cout << "Generated invalid square while applying permutation: " << endl
-							 << endl << permline << " to the square " << endl << endl
-							 << baseSq.tostring() << endl << endl
-							 << "This created the following row, col, and sym squares, "
-							 << "respectively" << endl << endl << rowSq.tostring() << endl << endl
-							 << colSq.tostring() << endl << endl << symSq.tostring() << endl;
-						exit(0);
+					cout << "Checking square " << (i - startIdx) << " of " << (endIdx - startIdx) << endl;
 				}
 
-				// TODO: take advantage of normalized square efficiencies by 
-				// not using string representations
-                rowSq.reduce(); colSq.reduce(); symSq.reduce();
+				// Unpack base square into buffer (push_back may invalidate pointers)
+				unpack_buf(checkSqs[i], baseBuf, o_sq);
 
-				newSquares.insert(rowSq.flatstring_no_space());
-				newSquares.insert(colSq.flatstring_no_space());
-				newSquares.insert(symSq.flatstring_no_space());
+				for (auto permIt = permVec.begin(); permIt != permVec.end(); permIt++)
+				{
+					short* permArr = (*permIt);
+
+					{
+						auto tp = Clock::now();
+						permute_rows_into(order, baseBuf, rowBuf, permArr);
+						permute_cols_into(order, baseBuf, colBuf, permArr);
+						permute_symbols_into(o_sq, baseBuf, symBuf, permArr);
+						t_permute_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+
+					{
+						auto tp = Clock::now();
+						reduce_buf(order, rowBuf, tempBuf);
+						reduce_buf(order, colBuf, tempBuf);
+						reduce_buf(order, symBuf, tempBuf);
+						t_reduce_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+
+					{
+						auto tp = Clock::now();
+						PackedSquare rp = pack_buf(rowBuf, o_sq);
+						if (allSqs.insert(rp).second)
+							checkSqs.push_back(rp);
+						PackedSquare cp = pack_buf(colBuf, o_sq);
+						if (allSqs.insert(cp).second)
+							checkSqs.push_back(cp);
+						PackedSquare sp = pack_buf(symBuf, o_sq);
+						if (allSqs.insert(sp).second)
+							checkSqs.push_back(sp);
+						t_insert_ops += std::chrono::duration_cast<Sec>(Clock::now() - tp).count();
+					}
+				}
 			}
-			count++;
+			t_permute_phase += std::chrono::duration_cast<Sec>(Clock::now() - t0).count();
 		}
 
-		// these squares were checked so delete
-		checkSqs.clear();
-		pair<unordered_set<string>::iterator, bool> returnValue;
-		for(auto it = newSquares.begin(); it != newSquares.end(); it++)
+		startIdx = endIdx;
+		cout << "Start Count: " << allSqs.size() << ", next batch from " << startIdx << endl;
+	} while (startIdx < checkSqs.size());
+
+	delete[] baseBuf; delete[] rowBuf; delete[] colBuf; delete[] symBuf; delete[] tempBuf;
+
+	// --- Write output: unpack each packed square and print values ---
+	{
+		auto t0 = Clock::now();
+		short* outBuf = new short[o_sq];
+		for (const auto& ps : allSqs)
 		{
-			string lsString = (*it);
-			returnValue = allSqs.insert(lsString);
-			if(returnValue.second)
-			{
-				LatinSquare ls = LatinSquare(order, get_array_from_line(lsString, order*order));
-				checkSqs.push_back(ls);
-			}
+			unpack_buf(ps, outBuf, o_sq);
+			for (int j = 0; j < o_sq; j++)
+				sqfile << outBuf[j];
+			sqfile << '\n';
 		}
-		newSquares.clear();
+		delete[] outBuf;
+		sqfile.close();
+		t_write = std::chrono::duration_cast<Sec>(Clock::now() - t0).count();
+	}
 
-		// process until the number of squares at the end of the while loop
-		// is the same as it was at the start (i.e. until no new squares are added)
-		cout << "Start Count: " << numSqs << ", End Count: " << allSqs.size() << endl;
-	} while (numSqs < allSqs.size());
+	// Timing report
+	double total = t_load_iso + t_load_perm + t_permute_phase + t_write;
+	cout << "\n--- Serial timing (seconds) ---\n";
+	cout << std::fixed << std::setprecision(3);
+	double pct = (total > 0) ? 1.0 / total : 0;
+	cout << "  Load isotopy reps:  " << std::setw(8) << t_load_iso  << "  (" << (100.0 * t_load_iso  * pct) << "%)\n";
+	cout << "  Load permutations:  " << std::setw(8) << t_load_perm << "  (" << (100.0 * t_load_perm * pct) << "%)\n";
+	cout << "  Permute phase (inner loop): " << std::setw(8) << t_permute_phase << "  (" << (100.0 * t_permute_phase * pct) << "%)\n";
+	cout << "    - permute row/col/sym: " << std::setw(8) << t_permute_ops << "  (" << (100.0 * t_permute_ops * pct) << "%)\n";
+	cout << "    - reduce (x3):         " << std::setw(8) << t_reduce_ops << "  (" << (100.0 * t_reduce_ops * pct) << "%)\n";
+	cout << "    - pack + insert:        " << std::setw(8) << t_insert_ops << "  (" << (100.0 * t_insert_ops * pct) << "%)\n";
+	cout << "  Write output:       " << std::setw(8) << t_write << "  (" << (100.0 * t_write * pct) << "%)\n";
+	cout << "  TOTAL:              " << std::setw(8) << total << "\n";
 
-
-	end = clock();
-	double timeTaken = double(end-start) / double(CLOCKS_PER_SEC);
-	cout << "SERIAL Time Taken: " << timeTaken << " seconds" << endl;
-
-	// write all squares to a file
-	for(auto it = allSqs.begin(); it != allSqs.end(); it++)
-		sqfile << (*it) << endl;
-
-	sqfile.close();
 	return 0;
 }
